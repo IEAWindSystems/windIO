@@ -86,6 +86,30 @@ def load_yaml(filename: str, loader=XrResourceLoader) -> dict:
     with open(filename) as fid:
         return yaml.load(fid, loader)
 
+def enforce_no_additional_properties(schema):
+    """Recursively set additionalProperties: false for all objects in the schema"""
+    if isinstance(schema, dict):
+
+        # If this is an object type schema, and additionalProperties is not specified,
+        #   set additionalProperties: false
+        if (schema.get('type') == 'object' or 'properties' in schema) and 'additionalProperties' not in schema:
+            schema['additionalProperties'] = False
+        
+        # Recursively process all nested schemas
+        for key, value in schema.items():
+            if key == 'properties':
+                # Process each property's schema
+                for prop_schema in value.values():
+                    enforce_no_additional_properties(prop_schema)
+            elif key in ['items', 'additionalItems']:
+                # Process array item schemas
+                enforce_no_additional_properties(value)
+            elif key in ['oneOf', 'anyOf', 'allOf']:
+                # Process each subschema in these combining keywords
+                for subschema in value:
+                    enforce_no_additional_properties(subschema)
+    return schema
+
 def _add_local_schemas_to(resolver, schema_folder, base_uri, schema_ext_lst=['.json', '.yaml', '.yml']):
     '''Function from https://gist.github.com/mrtj/d59812a981da17fbaa67b7de98ac3d4b#file-local_ref-py
     Add local schema instances to a resolver schema cache.
@@ -115,7 +139,7 @@ def _add_local_schemas_to(resolver, schema_folder, base_uri, schema_ext_lst=['.j
                 except Exception:
                     print("Reading %s failed" % file)
 
-def validate(input: dict | str | Path, schema_type: str) -> None:
+def validate(input: dict | str | Path, schema_type: str, restrictive: bool = True) -> None:
     """
     Validates a given windIO input based on the selected schema type.
 
@@ -125,6 +149,8 @@ def validate(input: dict | str | Path, schema_type: str) -> None:
             of the schema files available in the ``schemas/plant`` or ``schemas/turbine`` folders.
             Examples of valid schema types are 'plant/wind_energy_system' or
             '`turbine/IEAontology_schema`'.
+        restrictive (bool, optional): If True, the schema will be modified to enforce
+            that no additional properties are allowed. Defaults to True.
 
     Raises:
         FileNotFoundError: If the schema type is not found in the schemas folder.
@@ -148,6 +174,9 @@ def validate(input: dict | str | Path, schema_type: str) -> None:
         raise TypeError(f"Input type {type(input)} is not supported.")
 
     schema = load_yaml(schema_file)
+    if restrictive:
+        schema = enforce_no_additional_properties(schema)
+
     base_uri = 'https://www.example.com/schemas/'
     resolver = jsonschema.RefResolver(base_uri=base_uri, referrer=schema)
     schema_folder = Path(schema_file).parent
