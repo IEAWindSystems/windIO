@@ -1,17 +1,18 @@
 # yaml-language-server: $schema=http://json-schema.org/draft-07/schema#
 # Author: Pietro Bortolotti
 # Organization: National Renewable Energy Laboratory, Golden, CO
-# Date: 2020-04-28
+# Date: 2025-01-14
 
 
 
 $schema: "http://json-schema.org/draft-07/schema#"
 $id: IEA_ontology_v1.0
 title: IEA wind turbine ontology
-description: Ontology definition for wind turbines as defined in WP1 of IEA Wind Task 37 - Phase II
+description: Ontology definition for wind turbines
 type: object
 required:
     - name
+    - windIO_version
     - components
     - materials
     - assembly
@@ -25,14 +26,18 @@ optional:
 # additionalProperties: true
 properties:
     comments:
-        description: Description of the model
+        description: Text field to describe the wind turbine, the changes to previous versions, etc,
         type: string
     name:
-        description: Name of the turbine
+        description: Unique identifier of the wind turbine model
+        type: string
+    windIO_version:
+        description: Version of windIO used
         type: string
     assembly:
         type: object
         default: {}
+        description: The field assembly includes nine entries that aim at describing the overall configuration of the wind turbine
         optional:
             - turbine_class
             - turbulence_class
@@ -47,33 +52,33 @@ properties:
             turbine_class:
                 type: string
                 default: I
-                description: IEC wind class of the wind turbine. The options are "I", "II", "III", and 'IV'
+                description: IEC wind class. The entry should be :code:`I`, :code:`II`, :code:`III`, or :code:`IV`.
                 enum: [I, II, III, IV, i, ii, iii, iv, 1, 2, 3, 4]
             turbulence_class:
                 type: string
                 default: B
-                description: IEC turbulence class of the wind turbine. The options are "A", "B", and "C"
+                description: IEC turbulence class of the wind turbine. The options are :code:`A`, :code:`B`, :code:`C`, and :code:`D`.
                 enum: [A, B, C, D, a, b, c, d]
             drivetrain:
                 type: string
                 default: geared
-                description: String characterizing the drivetrain configuration
+                description: Drivetrain configuration. This is intended to inform an automated interpreter of the yaml about the data specified in the field drivetrain
             rotor_orientation:
                 type: string
                 default: Upwind
-                description: Orientation of the horizontal-axis rotor. The options are "Upwind" and "Downwind"
+                description: Switch between :code:`upwind` and :code:`downwind` rotor configurations.
                 enum: [Upwind, upwind, UPWIND, downwind, Downwind, DOWNWIND]
             number_of_blades:
                 type: integer
                 default: 3
-                description: Number of blades of the rotor
+                description: Integer setting the number of blades of the rotor
                 units: none
                 minimum: 0
                 maximum: 10
             rotor_diameter:
                 type: number
                 default: 0
-                description: Diameter of the rotor, defined as two times the blade length plus the hub diameter
+                description: Diameter of the wind turbine rotor. It is defined as two times the sum of hub radius and blade length along the z direction times the cosine of the rotor precone. In formula, this is 2 x (Rhub + blade length along z) * cos(precone). This definition is consistent with commercial aeroelastic solvers. It is not consistent with OpenFAST, which takes into account the instantaneous blade deflection.
                 units: m
                 minimum: 0
                 maximum: 1000
@@ -97,11 +102,12 @@ properties:
                 default: 25.0
     components:
         type: object
+        description: Nested dictionary structure of components describing the wind turbine assembly
         default: {}
         optional:
             - blade
             - hub
-            - nacelle
+            - drivetrain
             - tower
             - monopile
             - floating_platform
@@ -109,18 +115,21 @@ properties:
         properties:
             blade:
                 type: object
+                description: The component :code:`blade` includes three subcomponents, namely :code:`outer_shape_bem`, :code:`elastic_properties_mb`, and :code:`internal_structure_2d_fem`. A fourth and a fifth subfields :code:`cfd_geometry` and :code:`3D_fem` will be added to support higher fidelity modeling of the rotor. All distributed quantities, such as blade chord or the thickness of a structural component, are expressed in terms of pair arrays :code:`grid` and :code:`values`, which must have a minimum length of two elements and the same size. :code:`grid` is defined nondimensional between 0 (root) and 1 (tip) along the, possibly curved, :code:`reference_axis`.
                 properties:
                     outer_shape_bem:
                         type: object
+                        description: :code:`outer_shape_bem` consists of a dictionary containing the data for blade BEM-based aerodynamics. 
                         required:
                             - airfoil_position
                             - chord
                             - twist
-                            - pitch_axis
+                            - section_offset_x
                             - reference_axis
                         properties:
                             airfoil_position:
                                 type: object
+                                description: The array :code:`labels` specifies the names of the airfoils to be placed along the blade. The positions are specified in the field :code:`grid`. The two arrays must share the same length and to keep an airfoil constant along blade span, this must be defined twice. The :code:`labels` must match the :code:`names` of the airfoils listed in the top level :code:`airfoils`. In between airfoils, the recommended interpolation scheme for both coordinates and polars is the Piecewise Cubic Hermite Interpolating Polynomial (PCHIP), which is implemented in `Matlab <https://www.mathworks.com/help/matlab/ref/pchip.html>`_ and in the Python library `SciPy  <https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.PchipInterpolator.html>`_. Optionally, the field :code:`rthick.values` can also be defined, see below.
                                 required:
                                     - grid
                                     - labels
@@ -128,9 +137,14 @@ properties:
                                     grid:
                                         $ref: "#/definitions/distributed_data/grid_nd"
                                     labels:
-                                        $ref: "#/definitions/distributed_data/strings"
+                                        type: array
+                                        items:
+                                            type: string
+                                            minItems: 2
+                                            uniqueItems: false
                             chord:
                                 type: object
+                                description: The array :code:`values` specifies the chord along blade span.
                                 required:
                                     - grid
                                     - values
@@ -141,6 +155,7 @@ properties:
                                         $ref: "#/definitions/distributed_data/length"
                             twist:
                                 type: object
+                                description: The array :code:`values` specifies the aerodynamic twist along blade span. Twist is generally positive toward blade root, and may become negative toward blade tip.
                                 required:
                                     - grid
                                     - values
@@ -149,8 +164,9 @@ properties:
                                         $ref: "#/definitions/distributed_data/grid_nd"
                                     values:
                                         $ref: "#/definitions/distributed_data/angle"
-                            pitch_axis:
+                            section_offset_x:
                                 type: object
+                                description: This parameter controls the airfoil position relative to the reference axis, by specifying the distance in meters along the chordline from the reference axis to the leading edge. 0 means that the airfoil is pinned at the leading edge, a positive offset means that the leading edge is upstream of the reference axis in local chordline coordinates, and a negative offset that the leading edge aft of the reference axis.
                                 required:
                                     - grid
                                     - values
@@ -158,9 +174,21 @@ properties:
                                     grid:
                                         $ref: "#/definitions/distributed_data/grid_nd"
                                     values:
+                                        $ref: "#/definitions/distributed_data/length"
+                            section_offset_y:
+                                type: object
+                                description: This parameter controls the airfoil position relative to the reference axis, by specifying the chordline normal distance in meters from the reference axis. 0 means that the reference axis lies on the airfoil chordline, a positive offset means that the chordline is shifted in the direction of the suction side relative to the reference axis, and a negative offset that the section is shifted in the direction of the pressure side of the airfoil.
+                                required:
+                                    - grid
+                                    - values
+                                properties:
+                                    grid:
                                         $ref: "#/definitions/distributed_data/grid_nd"
+                                    values:
+                                        $ref: "#/definitions/distributed_data/length"
                             rthick:
                                 type: object
+                                description: This array has recently been added to windIO to overcome the uncertainty in the interpolated distribution of relative thickness along blade span. It should match the field :code:`airfoil_position`
                                 required:
                                     - grid
                                     - values
@@ -169,54 +197,14 @@ properties:
                                         $ref: "#/definitions/distributed_data/grid_nd"
                                     values:
                                         $ref: "#/definitions/distributed_data/grid_nd"
-                            L/D:
-                                type: object
-                                required:
-                                    - grid
-                                    - values
-                                properties:
-                                    grid:
-                                        $ref: "#/definitions/distributed_data/grid_nd"
-                                    values:
-                                        $ref: "#/definitions/distributed_data/nd"
-                            c_d:
-                                type: object
-                                required:
-                                    - grid
-                                    - values
-                                properties:
-                                    grid:
-                                        $ref: "#/definitions/distributed_data/grid_nd"
-                                    values:
-                                        $ref: "#/definitions/distributed_data/nd"
-                            stall_margin:
-                                type: object
-                                required:
-                                    - grid
-                                    - values
-                                properties:
-                                    grid:
-                                        $ref: "#/definitions/distributed_data/grid_nd"
-                                    values:
-                                        $ref: "#/definitions/distributed_data/angle"
                             reference_axis:
                                 $ref: "#/definitions/distributed_data/axis_coordinates"
-                            # coordinates:
-                                    # description: Coordinates expressed in the blade root coordinate system.
-                                    # $ref: "#/definitions/distributed_data/coordinates"
                     elastic_properties_mb:
-                        type: object
-                        properties:
-                            timoschenko_hawc:
-                                $ref: "#/definitions/beam/timoschenko_hawc"
-                            cp_lambda_beam:
-                                $ref: "#/definitions/beam/cp_lambda_beam"
-                            six_x_six:
-                                $ref: "#/definitions/beam/six_x_six"
-
+                        $ref: "#/definitions/beam"
                     internal_structure_2d_fem:
                         type: object
                         default: {}
+                        description: The field :code:`internal_structure_2d_fem` contains the data to describe the internal structure of standard wind turbine blades. This is a fairly sophisticated process and the ontology proposed in this work supports different definitions. On the top level, the field :code:`internal_structure_2d_fem` has three sub-components, namely the :code:`reference_axis`, which is usually defined equal to the :code:`reference_axis` in the field :code:`outer_shape_bem`, the :code:`webs`, where the positions of the shear webs are defined, and the :code:`layers`, which describe all internal layers in terms of :code:`name`, :code:`material`, :code:`thickness`, number of plies :code:`n_plies`, :code:`fiber_orientation` (for composites), and position in the two-dimensional sections. Recently, the fields :code:`joint` and :code:`root` were added to support blades that are segmented spanwise and details about the blade root bolting.
                         required:
                             - reference_axis
                             - layers
@@ -243,7 +231,7 @@ properties:
                                 $ref: "#/definitions/distributed_data/axis_coordinates"
                             webs:
                                 type: array
-                                description: ...
+                                description: The field :code:`webs` consists of a list of entries, each representing a shear web defined in terms of :code:`name` and position.
                                 items:
                                     type: object
                                     required:
@@ -251,18 +239,18 @@ properties:
                                     properties:
                                         name:
                                             type: string
-                                            description: structural component identifier
+                                            description: String that identifies the web.
                                         start_nd_arc:
                                             $ref: "#/definitions/distributed_data/nd_arc_position"
                                         end_nd_arc:
                                             $ref: "#/definitions/distributed_data/nd_arc_position"
                                         rotation:
                                             $ref: "#/definitions/distributed_data/rotation"
-                                        offset_y_pa:
+                                        offset_y_ref_axis:
                                             $ref: "#/definitions/distributed_data/offset"
                             layers:
                                 type: array
-                                description: ...
+                                description: The sub-field :code:`layers` defines the material layers of the wind turbine blade. In most cases, these are layers of composite materials. The most convenient approach to define the position of spar caps mimics the definition of the shear webs, adding the width and side that define the width of the layer in meters and the side where the layer is located, either “pressure” or “suction”. Layers that wrap the entire cross section, such as paint or outer shell skin, can be defined with :code:`start_nd_arc` set to 0 and :code:`end_nd_arc` set to 1. To define reinforcements, the best way is usually to define the width, in meters, and the midpoint, named :code:`midpoint_nd_arc` and defined nondimensional between 0 and 1. Converters should be able to look for the leading edge, marked as LE. Similar combinations can be constructed with the combination of :code:`width` and :code:`start_nd_arc` or :code:`end_nd_arc`. Finally, for composite layers belonging to the shear webs, a tag :code:`web` should contain the name of the web. The layers are then modeled from leading edge to trailing edge in the order they were specified.
                                 items:
                                     type: object
                                     required:
@@ -272,16 +260,16 @@ properties:
                                     properties:
                                         name:
                                             type: string
-                                            description: structural component identifier
+                                            description: String that identifies the layer.
                                         material:
                                             type: string
-                                            description: material identifier
+                                            description: String that identifies the material of the layer. The material and its properties must be defined in the top-level :code:`materials`.
                                         web:
                                             type: string
                                             description: web to which the layer is associated to, only to be defined for web layers
                                         thickness:
                                             type: object
-                                            description: thickness of the laminate
+                                            description: Dimensional thickness of the laminate, expressed in meters. This value is modeled constant along the section. To define ply drops along the 2D surface, the user is therefore required to define multiple layers, possibly ply by ply when many ply drops exist.
                                             required:
                                                 - grid
                                                 - values
@@ -292,7 +280,7 @@ properties:
                                                     $ref: "#/definitions/distributed_data/length"
                                         n_plies:
                                             type: object
-                                            description: number of plies of the laminate
+                                            description: In addition or in alternative to the dimensional thickness, the discrete number of plies of a composite laminate can be defined by the user. Notably, the ply thickness is a material property (not a layer property) and it is defined in the top-level field :code:`materials`.
                                             required:
                                                 - grid
                                                 - values
@@ -303,7 +291,7 @@ properties:
                                                     $ref: "#/definitions/distributed_data/nd"
                                         fiber_orientation:
                                             type: object
-                                            description: orientation of the fibers
+                                            description: For composite laminates, the orientation of the fibers in degrees can be specified. Looking from blade root, positive angles represent a rotation of the fibers towards the leading edge of the blade. Note that the angles are with respect to the cross section local reference system, not the reference system at blade root.
                                             default: {'grid':[0.0, 1.0], 'values':[0.0, 0.0]}
                                             required:
                                                 - grid
@@ -315,7 +303,7 @@ properties:
                                                     $ref: "#/definitions/distributed_data/angle"
                                         width:
                                             type: object
-                                            description: dimensional width of the component along the arc
+                                            description: The field width defines the width in meters along the arc of the layer. 
                                             required:
                                                 - grid
                                                 - values
@@ -326,18 +314,22 @@ properties:
                                                     $ref: "#/definitions/distributed_data/length"
                                         midpoint_nd_arc:
                                             $ref: "#/definitions/distributed_data/nd_arc_position"
+                                        side:
+                                            type: string
+                                            description: The field side is string that can be either :code:`suction` or :code:`pressure`, defining the side where a layer is defined.
+                                            enum: ['suction', 'pressure', 'Suction', 'Pressure', 'SUCTION', 'PRESSURE']
                                         start_nd_arc:
                                             $ref: "#/definitions/distributed_data/nd_arc_position"
                                         end_nd_arc:
                                             $ref: "#/definitions/distributed_data/nd_arc_position"
                                         rotation:
                                             $ref: "#/definitions/distributed_data/rotation"
-                                        offset_y_pa:
+                                        offset_y_ref_axis:
                                             $ref: "#/definitions/distributed_data/offset"
                             joint:
                                 type: object
                                 default: {}
-                                description: This is a spanwise joint along the blade, usually adopted to ease transportation constraints. WISDEM currently supports a single joint.
+                                description: This is a spanwise joint along the blade, usually adopted to ease transportation constraints
                                 properties:
                                     position:
                                         type: number
@@ -388,75 +380,47 @@ properties:
                         # TODO
             hub:
                 type: object
+                additionalProperties: True
+                required:
+                    - diameter
+                    - cone_angle
+                    - cd
+                properties:
+                    diameter:
+                        type: number
+                        description: This is the outer diameter of the hub. It is also the diameter of the circle centered at the rotor apex and connecting the blade root centers.
+                        units: meter
+                        minimum: 0.
+                        maximum: 30.
+                    cone_angle:
+                        type: number
+                        description: Rotor precone angle, defined positive for both upwind and downwind rotors.
+                        units: deg
+                        minimum: 0
+                        maximum: 50
+                    cd:
+                        type: number
+                        description: Equivalent drag coefficient to compute the aerodynamic forces generated on the hub.
+                        units: none
+                        minimum: 0
+                        maximum: 2.
+                    elastic_properties_mb:
+                        $ref: "#/definitions/point_mass"
+                        description: Point mass modeling the full hub system, which includes the hub, the spinner, the blade bearings, the pitch actuators, the cabling, ....
+            drivetrain:
+                type: object
                 properties:
                     outer_shape_bem:
                         type: object
-                        required:
-                            - diameter
-                            - cone_angle
-                            - drag_coefficient
-                        properties:
-                            diameter:
-                                type: number
-                                description: Diameter of the hub measured at the blade root positions.
-                                units: meter
-                                minimum: 0.
-                                maximum: 10.
-                            cone_angle:
-                                type: number
-                                description: Rotor precone angle, defined positive for both upwind and downwind rotors.
-                                units: rad
-                                minimum: 0
-                                maximum: 0.4
-                            drag_coefficient:
-                                type: number
-                                description: Equivalent drag coefficient to compute the aerodynamic forces generated on the hub.
-                                units: none
-                                minimum: 0
-                                maximum: 2.
-                    elastic_properties_mb:
-                        type: object
-                        required:
-                            - system_mass
-                            - system_inertia
-                        properties:
-                            system_mass:
-                                type: number
-                                description: Mass of the hub system, which includes the hub, the spinner, the blade bearings, the pitch actuators, the cabling, ....
-                                units: kg
-                                minimum: 0
-                            system_inertia:
-                                type: array
-                                description: Inertia of the hub system, on the hub reference system, which has the x aligned with the rotor axis, and y and z perpendicular to it.
-                                items:
-                                    type: number
-                                    units: kgm2
-                                    minItems: 6
-                                    maxItems: 6
-                                    uniqueItems: false
-                            system_center_mass:
-                                type: array
-                                description: Center of mass of the hub system. Work in progress.
-                                items:
-                                    type: number
-                                    units: m
-                                    minItems: 3
-                                    maxItems: 3
-                                    uniqueItems: false
-            nacelle:
-                type: object
-                properties:
-                    drivetrain:
-                        type: object
-                        description: Inputs to WISDEM specific drivetrain sizing tool, DrivetrainSE
+                        description: Geometrical metrics describing the drivetrain. Currently, these are inputs to WISDEM specific drivetrain sizing tool, DrivetrainSE
                         properties:
                             uptilt:
                                 type: number
                                 description: Tilt angle of the nacelle, always defined positive.
-                                units: rad
+                                units: deg
                                 minimum: 0.
-                                maximum: 0.2
-                                default: 0.08726 # 5 deg
+                                maximum: 20.
+                                default: 5.
                             distance_tt_hub:
                                 type: number
                                 description: Vertical distance between the tower top and the hub center.
@@ -485,39 +449,16 @@ properties:
                                 minimum: 0.
                                 maximum: 20.
                                 default: 5.0
-                            generator_length:
+                            cd:
                                 type: number
-                                description: Length of generator along the shaft
-                                units: meter
-                                minimum: 0.
-                                maximum: 20.
-                                default: 2.0
-                            generator_radius_user:
-                                type: number
-                                description: User input override of generator radius, only used when using simple generator scaling
-                                units: m
-                                minimum: 0.
-                                maximum: 20.0
-                                default: 0.0
-                            generator_mass_user:
-                                type: number
-                                description: User input override of generator mass, only used when using simple generator mass scaling
-                                units: kg
-                                minimum: 0.
-                                maximum: 1.e+9
-                                default: 0.0
-                            generator_rpm_efficiency_user:
-                                type: object
-                                description: User input override of generator rpm-efficiency values, with rpm as grid input and eff as values input
-                                default: {'grid':[0.0], 'values':[0.0]}
-                                required:
-                                    - grid
-                                    - values
-                                properties:
-                                    grid:
-                                        $ref: "#/definitions/distributed_data/length"
-                                    values:
-                                        $ref: "#/definitions/distributed_data/length"
+                                description: Equivalent drag coefficient to compute the aerodynamic forces generated on the hub.
+                                units: none
+                                minimum: 0
+                                maximum: 2.
+                    gearbox:
+                        type: object
+                        description: Inputs describing the gearbox, when present
+                        properties: 
                             gear_ratio:
                                 type: number
                                 description: Gear ratio of the drivetrain. Set it to 1 for direct drive machines.
@@ -525,28 +466,28 @@ properties:
                                 minimum: 1
                                 maximum: 1000
                                 default: 1.0
-                            gearbox_length_user:
+                            length:
                                 type: number
                                 description: User input override of gearbox length along shaft, only used when using gearbox_mass_user is > 0
                                 units: meter
                                 minimum: 0.
                                 maximum: 20.
                                 default: 0.0
-                            gearbox_radius_user:
+                            radius:
                                 type: number
                                 description: User input override of gearbox radius, only used when using gearbox_mass_user is > 0
                                 units: m
                                 minimum: 0.
                                 maximum: 20.0
                                 default: 0.0
-                            gearbox_mass_user:
+                            mass:
                                 type: number
                                 description: User input override of gearbox mass
                                 units: kg
                                 minimum: 0.
                                 maximum: 1.e+9
                                 default: 0.0
-                            gearbox_efficiency:
+                            efficiency:
                                 type: number
                                 description: Efficiency of the gearbox system.
                                 units: none
@@ -560,156 +501,6 @@ properties:
                                 minimum: 0.0
                                 maximum: 1.
                                 default: 0.005
-                            lss_diameter:
-                                type: array
-                                description: Diameter of the low speed shaft at beginning (generator/gearbox) and end (hub) points
-                                default: [0.3, 0.3]
-                                items:
-                                    type: number
-                                    units: m
-                                    minItems: 2
-                                    maxItems: 2
-                                    default: 0.3
-                            lss_wall_thickness:
-                                type: array
-                                description: Thickness of the low speed shaft at beginning (generator/gearbox) and end (hub) points
-                                default: [0.1, 0.1]
-                                items:
-                                    type: number
-                                    units: m
-                                    minItems: 2
-                                    maxItems: 2
-                                    default: 0.1
-                            lss_material:
-                                type: string
-                                description: Material name identifier
-                                default: steel
-                            hss_length:
-                                type: number
-                                description: Length of the high speed shaft
-                                units: meter
-                                minimum: 0.
-                                maximum: 10.
-                                default: 1.5
-                            hss_diameter:
-                                type: array
-                                description: Diameter of the high speed shaft at beginning (generator) and end (generator) points
-                                default: [0.3, 0.3]
-                                items:
-                                    type: number
-                                    units: m
-                                    minItems: 2
-                                    maxItems: 2
-                                    default: 0.3
-                            hss_wall_thickness:
-                                type: array
-                                description: Thickness of the high speed shaft at beginning (generator) and end (generator) points
-                                default: [0.1, 0.1]
-                                items:
-                                    type: number
-                                    units: m
-                                    minItems: 2
-                                    maxItems: 2
-                                    default: 0.1
-                            hss_material:
-                                type: string
-                                description: Material name identifier
-                                default: steel
-                            nose_diameter:
-                                type: array
-                                description: Diameter of the nose/turret at beginning (bedplate) and end (main bearing) points
-                                default: [0.3, 0.3]
-                                items:
-                                    type: number
-                                    units: m
-                                    minItems: 2
-                                    maxItems: 2
-                                    default: 0.3
-                            nose_wall_thickness:
-                                type: array
-                                description: Thickness of the nose/turret at beginning (bedplate) and end (main bearing) points
-                                default: [0.1, 0.1]
-                                items:
-                                    type: number
-                                    units: m
-                                    minItems: 2
-                                    maxItems: 2
-                                    default: 0.1
-                            bedplate_wall_thickness:
-                                type: object
-                                description: Thickness of the hollow elliptical bedplate used in direct drive configurations
-                                default: {'grid':[0.0, 1.0], 'values':[0.05, 0.05]}
-                                required:
-                                    - grid
-                                    - values
-                                properties:
-                                    grid:
-                                        $ref: "#/definitions/distributed_data/grid_nd"
-                                    values:
-                                        $ref: "#/definitions/distributed_data/length"
-                            bedplate_flange_width:
-                                type: number
-                                description: Bedplate I-beam flange width used in geared configurations
-                                units: meter
-                                minimum: 0.
-                                maximum: 3.
-                                default: 1.0
-                            bedplate_flange_thickness:
-                                type: number
-                                description: Bedplate I-beam flange thickness used in geared configurations
-                                units: meter
-                                minimum: 0.
-                                maximum: 1.
-                                default: 0.05
-                            bedplate_web_thickness:
-                                type: number
-                                description: Bedplate I-beam web thickness used in geared configurations
-                                units: meter
-                                minimum: 0.
-                                maximum: 1.
-                                default: 0.05
-                            brake_mass_user:
-                                type: number
-                                default: 0.0
-                                units: kg
-                                description: Override regular regression-based calculation of brake mass with this value
-                                minimum: 0.0
-                            hvac_mass_coefficient:
-                                type: number
-                                default: 0.025
-                                units: kg/kW
-                                description: Regression-based scaling coefficient on machine rating to get HVAC system mass
-                                minimum: 0.0
-                            converter_mass_user:
-                                type: number
-                                default: 0.0
-                                units: kg
-                                description: Override regular regression-based calculation of converter mass with this value
-                                minimum: 0.0
-                            transformer_mass_user:
-                                type: number
-                                default: 0.0
-                                units: kg
-                                description: Override regular regression-based calculation of transformer mass with this value
-                                minimum: 0.0
-                            bedplate_material:
-                                type: string
-                                description: Material name identifier
-                                default: steel
-                            mb1Type:
-                                type: string
-                                description: Type of bearing for first main bearing
-                                default: CARB
-                                enum: [CARB, CRB, SRB, TRB]
-                            mb2Type:
-                                type: string
-                                description: Type of bearing for second main bearing
-                                default: SRB
-                                enum: [CARB, CRB, SRB, TRB]
-                            uptower:
-                                type: boolean
-                                description: If power electronics are located uptower (True) or at tower base (False)
-                                default: True
                             gear_configuration:
                                 type: string
                                 description: 3-letter string of Es or Ps to denote epicyclic or parallel gear configuration
@@ -726,380 +517,696 @@ properties:
                                     uniqueItems: false
                                     minimum: 0
                                     maximum: 6
+                            elastic_properties_mb:
+                                $ref: "#/definitions/point_mass"
+                                description: Point mass modeling the gearbox
+                    lss:
+                        type: object
+                        description: Inputs describing the low speed shaft
+                        properties:         
+                            length:
+                                type: number
+                                description: Length of the low speed shaft
+                                units: meter
+                                minimum: 0.
+                                maximum: 10.
+                                default: 1.5
+                            diameter:
+                                type: array
+                                description: Diameter of the low speed shaft at beginning (generator/gearbox) and end (hub) points
+                                default: [0.3, 0.3]
+                                items:
+                                    type: number
+                                    units: m
+                                    minItems: 2
+                                    maxItems: 2
+                                    default: 0.3
+                            wall_thickness:
+                                type: array
+                                description: Thickness of the low speed shaft at beginning (generator/gearbox) and end (hub) points
+                                default: [0.1, 0.1]
+                                items:
+                                    type: number
+                                    units: m
+                                    minItems: 2
+                                    maxItems: 2
+                                    default: 0.1
+                            material:
+                                type: string
+                                description: Material name identifier
+                                default: steel
+                            elastic_properties_mb:
+                                $ref: "#/definitions/beam"
+                                description: Beam modelling the low speed shaft
+                    hss:
+                        type: object
+                        description: Inputs describing the high speed shaft, when present
+                        properties:          
+                            length:
+                                type: number
+                                description: Length of the high speed shaft
+                                units: meter
+                                minimum: 0.
+                                maximum: 10.
+                                default: 1.5
+                            diameter:
+                                type: array
+                                description: Diameter of the high speed shaft at beginning (generator) and end (generator) points
+                                default: [0.3, 0.3]
+                                items:
+                                    type: number
+                                    units: m
+                                    minItems: 2
+                                    maxItems: 2
+                                    default: 0.3
+                            wall_thickness:
+                                type: array
+                                description: Thickness of the high speed shaft at beginning (generator) and end (generator) points
+                                default: [0.1, 0.1]
+                                items:
+                                    type: number
+                                    units: m
+                                    minItems: 2
+                                    maxItems: 2
+                                    default: 0.1
+                            material:
+                                type: string
+                                description: Material name identifier
+                                default: steel
+                            elastic_properties_mb:
+                                $ref: "#/definitions/beam"
+                                description: Beam modelling the high speed shaft
+                    nose:
+                        type: object
+                        description: Inputs describing the nose/turret at beginning (bedplate) and end (main bearing) points
+                        properties:
+                            diameter:
+                                type: array
+                                description: Diameter of the nose/turret at beginning (bedplate) and end (main bearing) points
+                                default: [0.3, 0.3]
+                                items:
+                                    type: number
+                                    units: m
+                                    minItems: 2
+                                    maxItems: 2
+                                    default: 0.3
+                            wall_thickness:
+                                type: array
+                                description: Thickness of the nose/turret at beginning (bedplate) and end (main bearing) points
+                                default: [0.1, 0.1]
+                                items:
+                                    type: number
+                                    units: m
+                                    minItems: 2
+                                    maxItems: 2
+                                    default: 0.1
+                            elastic_properties_mb:
+                                $ref: "#/definitions/beam"
+                                description: Beam modelling the nose
+                    bedplate:
+                        type: object
+                        description: Inputs describing the hollow elliptical bedplate used in direct drive configurations
+                        properties:
+                            wall_thickness:
+                                type: object
+                                description: Thickness of the hollow elliptical bedplate used in direct drive configurations
+                                default: {'grid':[0.0, 1.0], 'values':[0.05, 0.05]}
+                                required:
+                                    - grid
+                                    - values
+                                properties:
+                                    grid:
+                                        $ref: "#/definitions/distributed_data/grid_nd"
+                                    values:
+                                        $ref: "#/definitions/distributed_data/length"
+                            flange_width:
+                                type: number
+                                description: Bedplate I-beam flange width used in geared configurations
+                                units: meter
+                                minimum: 0.
+                                maximum: 3.
+                                default: 1.0
+                            flange_thickness:
+                                type: number
+                                description: Bedplate I-beam flange thickness used in geared configurations
+                                units: meter
+                                minimum: 0.
+                                maximum: 1.
+                                default: 0.05
+                            web_thickness:
+                                type: number
+                                description: Bedplate I-beam web thickness used in geared configurations
+                                units: meter
+                                minimum: 0.
+                                maximum: 1.
+                                default: 0.05
+                            material:
+                                type: string
+                                description: Material name identifier
+                                default: steel
+                    other_components:
+                        type: object
+                        description: Inputs describing all other drivetrain components, the assembly of brake, hvac, converter, transformer, and main bearings
+                        properties:
+                            brake_mass:
+                                type: number
+                                default: 0.0
+                                units: kg
+                                description: Override regular regression-based calculation of brake mass with this value
+                                minimum: 0.0
+                            hvac_mass_coefficient:
+                                type: number
+                                default: 0.025
+                                units: kg/kW
+                                description: Regression-based scaling coefficient on machine rating to get HVAC system mass
+                                minimum: 0.0
+                            converter_mass:
+                                type: number
+                                default: 0.0
+                                units: kg
+                                description: Override regular regression-based calculation of converter mass with this value
+                                minimum: 0.0
+                            transformer_mass:
+                                type: number
+                                default: 0.0
+                                units: kg
+                                description: Override regular regression-based calculation of transformer mass with this value
+                                minimum: 0.0                     
+                            mb1Type:
+                                type: string
+                                description: Type of bearing for first main bearing
+                                default: CARB
+                                enum: [CARB, CRB, SRB, TRB]
+                            mb2Type:
+                                type: string
+                                description: Type of bearing for second main bearing
+                                default: SRB
+                                enum: [CARB, CRB, SRB, TRB]
+                            uptower:
+                                type: boolean
+                                description: If power electronics are located uptower (True) or at tower base (False)
+                                default: True                  
+                            elastic_properties_mb:
+                                $ref: "#/definitions/point_mass"
+                                description: Point mass modeling the assembly of brake, hvac, converter, transformer, and main bearings
                     generator:
-                      properties:
+                      properties:                       
+                        type:
+                            type: string
+                            default: DFIG
+                            enum: [DFIG, dfig, EESG, eesg, SCIG, scig, PMSG_Arms, PMSG_ARMS, pmsg_arms, PMSG_Disc, PMSG_Disk, PMSG_DISC, PMSG_DISK, pmsg_disk, pmsg_disc, PMSG_Outer, PMSG_OUTER, pmsg_outer]
+                        rho_Fe:
+                            type: number
+                            default: 7700.0
+                            units: kg/m^3
+                            minimum: 0.0
+                            maximum: 1.e+5
+                            description: Structural steel density
+                        rho_Fes:
+                            type: number
+                            default: 7850.0
+                            units: kg/m^3
+                            minimum: 0.0
+                            maximum: 1.e+5
+                            description: Electrical steel density
+                        rho_Copper:
+                            type: number
+                            default: 8900.0
+                            units: kg/m^3
+                            minimum: 0.0
+                            maximum: 1.e+5
+                            description: Copper density
+                        rho_PM:
+                            type: number
+                            default: 7450.0
+                            units: kg/m^3
+                            minimum: 0.0
+                            maximum: 1.e+5
+                            description: Permanent magnet density
+                        B_r:
+                            type: number
+                            default: 1.2
+                            units: Tesla
+                            description: Words
+                            minimum: 0.0
+                        P_Fe0e:
+                            type: number
+                            default: 1.0
+                            units: W/kg
+                            minimum: 0.0
+                            maximum: 1000.0
+                            description: Words
+                        P_Fe0h:
+                            type: number
+                            default: 4.0
+                            units: W/kg
+                            minimum: 0.0
+                            maximum: 1000.0
+                            description: Words
+                        S_N:
+                            type: number
+                            default: -0.002
+                            units: none
+                            minimum: -100.0
+                            maximum: 0.0
+                            description: Words
+                        alpha_p:
+                            type: number
+                            default: 1.0995574287564276
+                            units: none
+                            minimum: 0.0
+                            maximum: 100.0
+                            description: Words
+                        b_r_tau_r:
+                            type: number
+                            default: 0.45
+                            units: none
+                            minimum: 0.0
+                            maximum: 100.0
+                            description: Words
+                        b_ro:
+                            type: number
+                            default: 0.004
+                            units: m
+                            minimum: 0.0
+                            maximum: 100.0
+                            description: Words
+                        b_s_tau_s:
+                            type: number
+                            default: 0.45
+                            units: none
+                            minimum: 0.0
+                            maximum: 100.0
+                            description: Words
+                        b_so:
+                            type: number
+                            default: 0.004
+                            units: m
+                            minimum: 0.0
+                            maximum: 100.0
+                            description: Words
+                        cofi:
+                            type: number
+                            default: 0.85
+                            units: none
+                            minimum: 0.0
+                            maximum: 100.0
+                            description: Words
+                        freq:
+                            type: number
+                            default: 60.0
+                            units: Hz
+                            minimum: 1.0
+                            maximum: 1000.0
+                            description: Words
+                        h_i:
+                            type: number
+                            default: 0.001
+                            units: m
+                            minimum: 0.0
+                            maximum: 1.0
+                            description: Words
+                        h_sy0:
+                            type: number
+                            default: 0.0
+                            units: none
+                            minimum: 0.0
+                            maximum: 100.0
+                            description: Words
+                        h_w:
+                            type: number
+                            default: 0.005
+                            units: m
+                            minimum: 0.0
+                            maximum: 1.0
+                            description: Words
+                        k_fes:
+                            type: number
+                            default: 0.9
+                            units: none
+                            minimum: 0.0
+                            maximum: 100.0
+                            description: Words
+                        k_fillr:
+                            type: number
+                            default: 0.7
+                            units: none
+                            minimum: 0.0
+                            maximum: 100.0
+                            description: Words
+                        k_fills:
+                            type: number
+                            default: 0.65
+                            units: none
+                            minimum: 0.0
+                            maximum: 100.0
+                            description: Words
+                        k_s:
+                            type: number
+                            default: 0.2
+                            units: none
+                            minimum: 0.0
+                            maximum: 100.0
+                            description: Words
+                        m:
+                            type: integer
+                            default: 3
+                            minimum: 0
+                            maximum: 100
+                            description: Words
+                        mu_0:
+                            type: number
+                            default: 1.2566370614359173e-06
+                            units: m*kg/s^2/A^2
+                            minimum: 0.0
+                            maximum: 1.0
+                            description: Permittivity of free space
+                        mu_r:
+                            type: number
+                            default: 1.06
+                            units: m*kg/s^2/A^2
+                            minimum: 0.0
+                            maximum: 100.0
+                            description: Words
+                        phi:
+                            type: number
+                            default: 90
+                            units: deg
+                            minimum: 0.0
+                            maximum: 90.0
+                            description: Words
+                        q1:
+                            type: integer
+                            default: 6
+                            minimum: 0
+                            maximum: 100
+                            description: Words
+                        q2:
+                            type: integer
+                            default: 4
+                            minimum: 0
+                            maximum: 100
+                            description: Words
+                        ratio_mw2pp:
+                            type: number
+                            default: 0.7
+                            units: none
+                            minimum: 0.0
+                            maximum: 100.0
+                            description: Words
+                        resist_Cu:
+                            type: number
+                            default: 2.52
+                            units: ohm/m
+                            minimum: 0.0
+                            maximum: 100.0
+                            description: Resistivity of copper
+                        y_tau_pr:
+                            type: number
+                            default: 0.83333333
+                            units: none
+                            minimum: 0.0
+                            maximum: 100.0
+                            description: Words
+                        y_tau_p:
+                            type: number
+                            default: 1.0
+                            units: none
+                            minimum: 0.0
+                            maximum: 100.0
+                            description: Words
+                        rad_ag:
+                            type: number
+                            default: 0.0
+                            units: m
+                            minimum: 0.0
+                            maximum: 100.0
+                            description: Words
+                        len_s:
+                            type: number
+                            default: 0.0
+                            units: m
+                            minimum: 0.0
+                            maximum: 100.0
+                            description: Words
+                        tau_p:
+                            type: number
+                            default: 0.0
+                            minimum: 0.0
+                            maximum: 100.0
+                            description: Words
+                        tau_s:
+                            type: number
+                            default: 0.0
+                            minimum: 0.0
+                            maximum: 100.0
+                            description: Words
+                        h_s:
+                            type: number
+                            default: 0.0
+                            units: m
+                            minimum: 0.0
+                            maximum: 100.0
+                            description: Words
+                        b_s:
+                            type: number
+                            default: 0.0
+                            description: Words
+                        b_t:
+                            type: number
+                            default: 0.0
+                            description: Words
+                        h_t:
+                            type: number
+                            default: 0.0
+                            description: Words
+                        h_ys:
+                            type: number
+                            default: 0.0
+                            description: Words
+                        h_yr:
+                            type: number
+                            default: 0.0
+                            description: Words
+                        h_m:
+                            type: number
+                            default: 0.0
+                            description: Words
+                        b_m:
+                            type: number
+                            default: 0.0
+                            description: Words
+                        B_g:
+                            type: number
+                            default: 0.0
+                            description: Words
+                        B_symax:
+                            type: number
+                            default: 0.0
+                            description: Words
+                        B_rymax:
+                            type: number
+                            default: 0.0
+                            description: Words
+                        p:
+                            type: number
+                            default: 0.0
+                            description: Words
+                        R_s:
+                            type: number
+                            default: 0.0
+                            description: Words
+                        L_s:
+                            type: number
+                            default: 0.0
+                            description: Words
+                        S:
+                            type: number
+                            default: 0.0
+                            description: Words
+                        t_r:
+                            type: number
+                            default: 0.0
+                            description: Words
+                        h_sr:
+                            type: number
+                            default: 0.0
+                            description: Words
+                        t_s:
+                            type: number
+                            default: 0.0
+                            description: Words
+                        h_ss:
+                            type: number
+                            default: 0.0
+                            description: Words
+                        E_p:
+                            type: number
+                            default: 0.0
+                            description: Words
+                        b:
+                            type: number
+                            default: 0.0
+                            description: Words
+                        c:
+                            type: number
+                            default: 0.0
+                            description: Words
+                        N_c:
+                            type: number
+                            default: 0.0
+                            description: Words
+                        B_tmax:
+                            type: number
+                            default: 0.0
+                            description: Words
+                        u_allow_pcent:
+                            type: number
+                            default: 0.0
+                            description: Words
+                        y_allow_pcent:
+                            type: number
+                            default: 0.0
+                            description: Words
+                        z_allow_deg:
+                            type: number
+                            default: 0.0
+                            description: Words
+                        sigma:
+                            type: number
+                            default: 40.e+3
+                            units: kg/s^2/m
+                            minimum: 0.0
+                            maximum: 100.e+6
+                            description: Maximum allowable shear stress
+                        h_0:
+                            type: number
+                            default: 0.0
+                            description: Words
+                        C_Cu:
+                            type: number
+                            default: 4.786
+                            units: USD/kg
+                            minimum: 0.0
+                            maximum: 100.0
+                            description: Copper cost
+                        C_Fe:
+                            type: number
+                            default: 0.556
+                            units: USD/kg
+                            minimum: 0.0
+                            maximum: 100.0
+                            description: Structural steel cost
+                        C_Fes:
+                            type: number
+                            default: 0.50139
+                            units: USD/kg
+                            minimum: 0.0
+                            maximum: 100.0
+                            description: Electrical steel cost
+                        C_PM:
+                            type: number
+                            default: 50.0
+                            units: USD/kg
+                            minimum: 0.0
+                            maximum: 100.0
+                            description: Permanent magnet cost
+                        length:
+                            type: number
+                            description: Length of generator along the shaft
+                            units: meter
+                            minimum: 0.
+                            maximum: 20.
+                            default: 2.0
+                        radius:
+                            type: number
+                            description: User input override of generator radius, only used when using simple generator scaling
+                            units: m
+                            minimum: 0.
+                            maximum: 20.0
+                            default: 0.0
+                        mass:
+                            type: number
+                            description: User input override of generator mass, only used when using simple generator mass scaling
+                            units: kg
+                            minimum: 0.
+                            maximum: 1.e+9
+                            default: 0.0
+                        rpm_efficiency:
+                            type: object
+                            description: User input override of generator rpm-efficiency values, with rpm as grid input and eff as values input
+                            default: {'grid':[0.0], 'values':[0.0]}
+                            required:
+                                - grid
+                                - values
+                            properties:
+                                grid:
+                                    $ref: "#/definitions/distributed_data/length"
+                                values:
+                                    $ref: "#/definitions/distributed_data/length"
                         mass_coefficient:
                           type: number
                           default: 0.0
                           units: none
                           description: When not doing a detailed generator design, use a simplified approach to generator scaling. This input allows for overriding of the regression-based scaling coefficient to obtain generator mass
                           minimum: 0.0
-                        generator_type:
-                          type: string
-                          default: DFIG
-                          enum: [DFIG, dfig, EESG, eesg, SCIG, scig, PMSG_Arms, PMSG_ARMS, pmsg_arms, PMSG_Disc, PMSG_Disk, PMSG_DISC, PMSG_DISK, pmsg_disk, pmsg_disc, PMSG_Outer, PMSG_OUTER, pmsg_outer]
-                        B_r:
-                          type: number
-                          default: 1.2
-                          units: Tesla
-                          description: Words
-                          minimum: 0.0
-                        P_Fe0e:
-                          type: number
-                          default: 1.0
-                          units: W/kg
-                          minimum: 0.0
-                          maximum: 1000.0
-                          description: Words
-                        P_Fe0h:
-                          type: number
-                          default: 4.0
-                          units: W/kg
-                          minimum: 0.0
-                          maximum: 1000.0
-                          description: Words
-                        S_N:
-                          type: number
-                          default: -0.002
-                          units: none
-                          minimum: -100.0
-                          maximum: 0.0
-                          description: Words
-                        S_Nmax:
-                          type: number
-                          default: -0.2
-                          units: none
-                          minimum: -100.0
-                          maximum: 0.0
-                          description: Words
-                        alpha_p:
-                          type: number
-                          default: 1.0995574287564276
-                          units: none
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Words
-                        b_r_tau_r:
-                          type: number
-                          default: 0.45
-                          units: none
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Words
-                        b_ro:
-                          type: number
-                          default: 0.004
-                          units: m
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Words
-                        b_s_tau_s:
-                          type: number
-                          default: 0.45
-                          units: none
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Words
-                        b_so:
-                          type: number
-                          default: 0.004
-                          units: m
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Words
-                        cofi:
-                          type: number
-                          default: 0.85
-                          units: none
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Words
-                        freq:
-                          type: number
-                          default: 60.0
-                          units: Hz
-                          minimum: 1.0
-                          maximum: 1000.0
-                          description: Words
-                        h_i:
-                          type: number
-                          default: 0.001
-                          units: m
-                          minimum: 0.0
-                          maximum: 1.0
-                          description: Words
-                        h_sy0:
-                          type: number
-                          default: 0.0
-                          units: none
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Words
-                        h_w:
-                          type: number
-                          default: 0.005
-                          units: m
-                          minimum: 0.0
-                          maximum: 1.0
-                          description: Words
-                        k_fes:
-                          type: number
-                          default: 0.9
-                          units: none
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Words
-                        k_fillr:
-                          type: number
-                          default: 0.7
-                          units: none
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Words
-                        k_fills:
-                          type: number
-                          default: 0.65
-                          units: none
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Words
-                        k_s:
-                          type: number
-                          default: 0.2
-                          units: none
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Words
-                        m:
-                          type: integer
-                          default: 3
-                          minimum: 0
-                          maximum: 100
-                          description: Words
-                        mu_0:
-                          type: number
-                          default: 1.2566370614359173e-06
-                          units: m*kg/s^2/A^2
-                          minimum: 0.0
-                          maximum: 1.0
-                          description: Permittivity of free space
-                        mu_r:
-                          type: number
-                          default: 1.06
-                          units: m*kg/s^2/A^2
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Words
-                        p:
-                          type: number
-                          default: 3.0
-                          units: none
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Words
-                        phi:
-                          type: number
-                          default: 1.5707963267948966 #90deg
-                          units: rad
-                          minimum: 0.0
-                          maximum: 7.0
-                          description: Words
-                        q1:
-                          type: integer
-                          default: 6
-                          minimum: 0
-                          maximum: 100
-                          description: Words
-                        q3:
-                          type: integer
-                          default: 4
-                          minimum: 0
-                          maximum: 100
-                          description: Words
-                        ratio_mw2pp:
-                          type: number
-                          default: 0.7
-                          units: none
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Words
-                        resist_Cu:
-                          type: number
-                          default: 2.52
-                          units: ohm/m
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Resistivity of copper
-                        sigma:
-                          type: number
-                          default: 40.e+3
-                          units: kg/s^2/m
-                          minimum: 0.0
-                          maximum: 100.e+6
-                          description: Maximum allowable shear stress
-                        y_tau_p:
-                          type: number
-                          default: 1.0
-                          units: none
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Words
-                        y_tau_pr:
-                          type: number
-                          default: 0.83333333
-                          units: none
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Words
-                        I_0:
-                          type: number
-                          default: 0.0
-                          units: A
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Words
-                        d_r:
-                          type: number
-                          default: 0.0
-                          units: m
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Words
-                        h_m:
-                          type: number
-                          default: 0.0
-                          units: m
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Words
-                        h_0:
-                          type: number
-                          default: 0.0
-                          units: m
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Words
-                        h_s:
-                          type: number
-                          default: 0.0
-                          units: m
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Words
-                        len_s:
-                          type: number
-                          default: 0.0
-                          units: m
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Words
-                        n_r:
-                          type: number
-                          default: 0.0
-                          units: none
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Words
-                        rad_ag:
-                          type: number
-                          default: 0.0
-                          units: m
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Words
-                        t_wr:
-                          type: number
-                          default: 0.0
-                          units: m
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Words
-                        n_s:
-                          type: number
-                          default: 0.0
-                          units: none
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Words
-                        b_st:
-                          type: number
-                          default: 0.0
-                          units: m
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Words
-                        d_s:
-                          type: number
-                          default: 0.0
-                          units: m
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Words
-                        t_ws:
-                          type: number
-                          default: 0.0
-                          units: m
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Words
-                        rho_Copper:
-                          type: number
-                          default: 8900.0
-                          units: kg/m^3
-                          minimum: 0.0
-                          maximum: 1.e+5
-                          description: Copper density
-                        rho_Fe:
-                          type: number
-                          default: 7700.0
-                          units: kg/m^3
-                          minimum: 0.0
-                          maximum: 1.e+5
-                          description: Structural steel density
-                        rho_Fes:
-                          type: number
-                          default: 7850.0
-                          units: kg/m^3
-                          minimum: 0.0
-                          maximum: 1.e+5
-                          description: Electrical steel density
-                        rho_PM:
-                          type: number
-                          default: 7450.0
-                          units: kg/m^3
-                          minimum: 0.0
-                          maximum: 1.e+5
-                          description: Permanent magnet density
-                        C_Cu:
-                          type: number
-                          default: 4.786
-                          units: USD/kg
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Copper cost
-                        C_Fe:
-                          type: number
-                          default: 0.556
-                          units: USD/kg
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Structural steel cost
-                        C_Fes:
-                          type: number
-                          default: 0.50139
-                          units: USD/kg
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Electrical steel cost
-                        C_PM:
-                          type: number
-                          default: 50.0
-                          units: USD/kg
-                          minimum: 0.0
-                          maximum: 100.0
-                          description: Permanent magnet cost
+                        # I_0:
+                        #   type: number
+                        #   default: 0.0
+                        #   units: A
+                        #   minimum: 0.0
+                        #   maximum: 100.0
+                        #   description: Words
+                        # d_r:
+                        #   type: number
+                        #   default: 0.0
+                        #   units: m
+                        #   minimum: 0.0
+                        #   maximum: 100.0
+                        #   description: Words
+                        # n_r:
+                        #   type: number
+                        #   default: 0.0
+                        #   units: none
+                        #   minimum: 0.0
+                        #   maximum: 100.0
+                        #   description: Words
+                        # t_wr:
+                        #   type: number
+                        #   default: 0.0
+                        #   units: m
+                        #   minimum: 0.0
+                        #   maximum: 100.0
+                        #   description: Words
+                        # n_s:
+                        #   type: number
+                        #   default: 0.0
+                        #   units: none
+                        #   minimum: 0.0
+                        #   maximum: 100.0
+                        #   description: Words
+                        # d_s:
+                        #   type: number
+                        #   default: 0.0
+                        #   units: m
+                        #   minimum: 0.0
+                        #   maximum: 100.0
+                        #   description: Words
+                        # t_ws:
+                        #   type: number
+                        #   default: 0.0
+                        #   units: m
+                        #   minimum: 0.0
+                        #   maximum: 100.0
+                        #   description: Words
+                        
+
+                        elastic_properties_mb:
+                                $ref: "#/definitions/point_mass"
+                                description: Point mass modeling the generator
             tower:
                 type: object
+                description: Data describing the wind turbine tower.
                 required:
                     - outer_shape_bem
                     - internal_structure_2d_fem
@@ -1109,12 +1216,13 @@ properties:
                         required:
                             - reference_axis
                             - outer_diameter
-                            - drag_coefficient
+                            - cd
                         properties:
                             reference_axis:
                                 $ref: "#/definitions/distributed_data/axis_coordinates"
-                            outer_diameter:
+                            outer_diameter: 
                                 type: object
+                                description: Outer diameters of the tower defined from base (grid = 0) to top (grid = 1).
                                 required:
                                     - grid
                                     - values
@@ -1123,7 +1231,7 @@ properties:
                                         $ref: "#/definitions/distributed_data/grid_nd"
                                     values:
                                         $ref: "#/definitions/distributed_data/length"
-                            drag_coefficient:
+                            cd:
                                 type: object
                                 required:
                                     - grid
@@ -1134,14 +1242,7 @@ properties:
                                     values:
                                         $ref: "#/definitions/distributed_data/grid_nd"
                     elastic_properties_mb:
-                        type: object
-                        properties:
-                            timoschenko_hawc:
-                                $ref: "#/definitions/beam/timoschenko_hawc"
-                            cp_lambda_beam:
-                                $ref: "#/definitions/beam/cp_lambda_beam"
-                            six_x_six:
-                                $ref: "#/definitions/beam/six_x_six"
+                        $ref: "#/definitions/beam"
                     internal_structure_2d_fem:
                         type: object
                         required:
@@ -1152,7 +1253,7 @@ properties:
                         properties:
                             outfitting_factor:
                                 type: number
-                                description: Scaling factor for the tower mass to account for auxiliary structures, such as elevator, ladders, cables, platforms, etc
+                                description: Multiplier of tower mass to account for the mass of the auxiliary systems, such as stairs, elevator, paint, or extra structural elements. This can be used to convert the mass of the steel cylinders to the total mass of the monopile.
                                 units: none
                                 minimum: 1.0
                                 maximum: 2.0
@@ -1219,12 +1320,13 @@ properties:
                         required:
                             - reference_axis
                             - outer_diameter
-                            - drag_coefficient
+                            - cd
                         properties:
                             reference_axis:
                                 $ref: "#/definitions/distributed_data/axis_coordinates"
                             outer_diameter:
                                 type: object
+                                description: Outer diameters of the monopile defined from base (grid = 0) to top (grid = 1).
                                 required:
                                     - grid
                                     - values
@@ -1233,8 +1335,26 @@ properties:
                                         $ref: "#/definitions/distributed_data/grid_nd"
                                     values:
                                         $ref: "#/definitions/distributed_data/length"
-                            drag_coefficient:
+                            ca:
                                 type: object
+                                description: Added mass coefficient for the monopile defined in terms of grid and values that default to 1.
+                                required:
+                                    - grid
+                                    - values
+                                properties:
+                                    grid:
+                                        $ref: "#/definitions/distributed_data/grid_nd"
+                                    values:
+                                        type: array
+                                        default: [1.0, 1.0]
+                                        items:
+                                            type: number
+                                            units: none
+                                            minItems: 2
+                                            uniqueItems: false
+                            cd:
+                                type: object
+                                description: Drag coefficient for the monopile
                                 required:
                                     - grid
                                     - values
@@ -1244,14 +1364,7 @@ properties:
                                     values:
                                         $ref: "#/definitions/distributed_data/grid_nd"
                     elastic_properties_mb:
-                        type: object
-                        properties:
-                            timoschenko_hawc:
-                                $ref: "#/definitions/beam/timoschenko_hawc"
-                            cp_lambda_beam:
-                                $ref: "#/definitions/beam/cp_lambda_beam"
-                            six_x_six:
-                                $ref: "#/definitions/beam/six_x_six"
+                        $ref: "#/definitions/beam"
                     internal_structure_2d_fem:
                         type: object
                         required:
@@ -1262,7 +1375,7 @@ properties:
                         properties:
                             outfitting_factor:
                                 type: number
-                                description: Scaling factor for the tower mass to account for auxiliary structures, such as elevator, ladders, cables, platforms, etc
+                                description: Multiplier of monopile mass to account for the mass of the auxiliary systems, such as paint or extra structural elements. This can be used to convert the mass of the steel cylinders to the total mass of the monopile.
                                 units: none
                                 minimum: 1.0
                                 maximum: 2.0
@@ -1354,7 +1467,7 @@ properties:
                         type: number
                         description: Leg diameter, meters. Constant throughout each leg.
             floating_platform:
-                description: Ontology definition for floating platforms (substructures) suitable for use with the WEIS co-design analysis tool
+                description: The floating platform ontology uses a *graph*-like representation of the geometry with Joints and Members.  Additional rigid body point masses can be defined at the joints as well.
                 type: object
                 required:
                     - joints
@@ -1366,6 +1479,7 @@ properties:
                 properties:
                     joints:
                         type: array
+                        description: Joints are the *nodes* of the graph representation of the floating platform.  They must be assigned a unique name for later reference by the members.
                         items:
                             type: object
                             required:
@@ -1436,9 +1550,9 @@ properties:
                                 - internal_structure
                             optional:
                                 # TODO: Move these to the modeling file?
-                                - Ca
-                                - Cp
-                                - Cd
+                                - ca
+                                - cp
+                                - cd
                             properties:
                                 name:
                                     description: Name of the member
@@ -1506,12 +1620,12 @@ properties:
                                             items:
                                                 type: number
                                                 minItems: 3
-                                                units: rad
+                                                units: deg
                                                 minimum: 0
                                         rotation:
                                             type: number
                                             description: Angle between principle axes of the cross-section and the member coordinate system.  Essentially the rotation of the member if both joints were placed on the global x-y axis with the first side length along the z-axis
-                                            units: rad
+                                            units: deg
                                 internal_structure:
                                     type: object
                                     required:
@@ -1584,6 +1698,7 @@ properties:
                                                     units: m
                                                     minimum: 0
                                                 spacing:
+                                                    type: number
                                                     description: Spacing between stiffeners in non-dimensional grid coordinates. Value of 0.0 means no stiffeners
                                                     units: none
                                                     minimum: 0.0
@@ -1605,11 +1720,12 @@ properties:
                                                 web_height: *stiff_wh
                                                 web_thickness: *stiff_wt
                                                 spacing:
-                                                    description: Spacing between stiffeners in angle (radians). Value of 0.0 means no stiffeners
-                                                    units: radians
-                                                    default: 1.5707963267948966 # 90 deg
+                                                    type: number
+                                                    description: Spacing between stiffeners in angle (deg). Value of 0.0 means no stiffeners
+                                                    units: deg
+                                                    default: 90
                                                     minimum: 0.0
-                                                    maximum: 6.283185307179586 # 360 deg
+                                                    maximum: 360
                                         bulkhead:
                                             type: object
                                             required:
@@ -1658,7 +1774,7 @@ properties:
                                                         units: m^3
                                                         minimum: 0
                                 axial_joints:
-                                    description: Define joints along non-dimensional axis of this member
+                                    description: Additional joints that are defined along the non-dimensional member axis can be defined here.  Unlike the joints defined in the global coordinate system in the :code:`joints` section of the ontology, these joints will change their absolute (x,y,z) location if the member diameter is altered the or :code:`joint1` or :code:`joint2` locations are changed during an optimization.  This is especially useful when designing a truss-like structure with pontoons attaching to primary members or columns in a semisubmersible. Like the joints above, these must be given a unique name.
                                     type: array
                                     items:
                                         type: object
@@ -1674,16 +1790,16 @@ properties:
                                                 minimum: 0.0
                                                 maximum: 1.0
                                                 description: Non-dimensional value along member axis
-                                Ca: &ca
+                                ca: &ca
                                     description: User-defined added mass coefficient
                                     type: number
-                                    default: 0.0
+                                    default: 1.0
                                     minimum: 0.0
-                                Cp: &cp
+                                cp: &cp
                                     description: User-defined pressure coefficient
                                     type: number
                                     default: 0.0
-                                Cd: &cd
+                                cd: &cd
                                     description: User-defined drag coefficient
                                     type: number
                                     default: 0.0
@@ -1700,9 +1816,9 @@ properties:
                                 - cm_offset
                                 - moments_of_inertia
                             optional:
-                                - Ca
-                                - Cp
-                                - Cd
+                                - ca
+                                - cp
+                                - cd
                             properties:
                                 joint1: *jointid
                                 mass:
@@ -1732,14 +1848,13 @@ properties:
                                         maxItems: 3
                                         minItems: 3
                                         minimum: 0
-                                Ca: *ca
-                                Cp: *cp
-                                Cd: *cd
+                                ca: *ca
+                                cp: *cp
+                                cd: *cd
                     transition_piece_mass: *m_tp
                     transition_piece_cost: *c_tp
             mooring:
-                # Will insert mooring schema that we agreed to here or will keep as separate file
-                description: Ontology definition for mooring systems suitable for use with the WEIS co-design analysis tool
+                description: The mooring system ontology follows closely the input file format for MoorDyn or MAP++.  Additional information can be found in the `MoorDyn user guide <http://www.matt-hall.ca/files/MoorDyn-Users-Guide-2017-08-16.pdf>`_ .
                 type: object
                 required:
                     - nodes
@@ -2002,16 +2117,19 @@ properties:
                                     minimum: 0.0
     airfoils:
         type: array
-        description: Database of airfoils
+        description: Database of airfoils. windIO describes the airfoils in terms of coordinates, polars, and unsteady aerodynamic coefficients. The yaml entry airfoils consists of a list of elements. For each set of coordinates, multiple sets of polars and parameters can co-exist. Note that the airfoils listed in this database are not all necessarily used in the blade. Only the ones called in :code:`airfoil_position' within :code:`outer_shape_bem` of the :code:`component` :code:`blade` will actually be loaded to model the blade.
         items:
             type: object
             properties:
                 name:
                     type: string
                     description: Name of the airfoil
+                description: 
+                    type: string
+                    description: Description of the airfoil
                 coordinates:
                     type: object
-                    description: Airfoil coordinates described from trailing edge (x=1) along the suction side (y>0) to leading edge (x=0) back to trailing edge (x=1) along the pressure side (y<0)
+                    description: The airfoil :code:`coordinates` are specified here in the sub-fields :code:`x` and :code:`y`. :code:`x` and :code:`y` must have the same length. :code:`x` must be defined between 0, which corresponds to the leading edge, and 1, which corresponds to the trailing edge. Airfoil coordinates should be defined from trailing edge (:code:`x=1`) towards the suction side (mostly positive :code:`y` values), to leading edge (:code:`x=0`, :code:`y=0`), to the pressure side (mostly negative :code:`y`), and conclude at the trailing edge pressure side (:code:`x=1`). Flatback airfoils can be defined either open (:code:`x=1`, :code:`y!=0`) or closed (:code:`x=1`, :code:`y=0`).
                     required:
                         - x
                         - y
@@ -2039,25 +2157,25 @@ properties:
                     units: none
                     minimum: 0
                     maximum: 1
-                    description: Thickness of the airfoil expressed non-dimensional
+                    description: Float defined between 0 (plate) and 1 (cylinder) to specify the relative thickness of the airfoil. This generates a small redundancy (airfoil thickness could be determined from the field coordinates), but it simplifies the converters.
                 aerodynamic_center:
                     type: number
                     units: none
                     minimum: 0
                     maximum: 1
-                    description: Non-dimensional chordwise coordinate of the aerodynamic center
+                    description: Float defined between 0 (leading edge) and 1 (trailing edge) to specify the chordwise coordinate of the aerodynamic center used to define the polars.
                 polars:
                     type: array
-                    description: Different sets of polars at varying conditions
+                    description: Different sets of polars at varying conditions. 
                     items:
                         type: object
-                        description: Lift, drag and moment coefficients expressed in terms of angles of attack
+                        description: List of one or more sets of polars for the airfoil. The field :code:`polars` must include the sub-fields :code:`configuration`, :code:`re`, :code:`cl`, :code:`cd`, and :code:`cm`. Parameters characterizing the unsteady aerodynamics are optional.
                         required:
                             - configuration
                             - re
-                            - c_l
-                            - c_d
-                            - c_m
+                            - cl
+                            - cd
+                            - cm
                         properties:
                             configuration:
                                 type: string
@@ -2065,8 +2183,10 @@ properties:
                             re:
                                 type: number
                                 description: Reynolds number of the polars
-                            c_l:
+                                minimum: 0
+                            cl:
                                 type: object
+                                description: Lift coefficient as a function of angle of attack (deg)
                                 required:
                                     - grid
                                     - values
@@ -2075,8 +2195,9 @@ properties:
                                         $ref: "#/definitions/distributed_data/grid_aoa"
                                     values:
                                         $ref: "#/definitions/distributed_data/polar_coeff"
-                            c_d:
+                            cd:
                                 type: object
+                                description: Drag coefficient as a function of angle of attack (deg)
                                 required:
                                     - grid
                                     - values
@@ -2085,8 +2206,9 @@ properties:
                                         $ref: "#/definitions/distributed_data/grid_aoa"
                                     values:
                                         $ref: "#/definitions/distributed_data/polar_coeff"
-                            c_m:
+                            cm:
                                 type: object
+                                description: Moment coefficient as a function of angle of attack (deg)
                                 required:
                                     - grid
                                     - values
@@ -2095,9 +2217,142 @@ properties:
                                         $ref: "#/definitions/distributed_data/grid_aoa"
                                     values:
                                         $ref: "#/definitions/distributed_data/polar_coeff"
+                            aoa0:
+                                type: number
+                                description: 0-lift angle of attack
+                                units: deg
+                            aoa1:
+                                type: number
+                                description: Angle of attack at f=0.7, (approximately the stall angle) for AOA>alpha0
+                                units: deg
+                            aoa2:
+                                type: number
+                                description: Angle of attack at f=0.7, (approximately the stall angle) for AOA<alpha0
+                                units: deg
+                            eta_e:
+                                type: number
+                                description: Recovery factor in the range [0.85 - 0.95]
+                                default: 1.
+                            c_nalpha:
+                                type: number
+                                description: Slope of the 2D normal force coefficient curve
+                                units: 1/rad
+                                minimum: 0.
+                            T_f0:
+                                type: number
+                                description: Initial value of the time constant associated with Df in the expression of Df and f. [default = 3]
+                                default: 3.
+                                minimum: 0.
+                            T_V0:
+                                type: number
+                                description: Initial value of the time constant associated with the vortex lift decay process; it is used in the expression of Cvn. It depends on Re,M, and airfoil class. [default = 6]
+                                default: 6.
+                                minimum: 0.
+                            T_p:
+                                type: number
+                                description: Boundary-layer,leading edge pressure gradient time constant in the expression of Dp. It should be tuned based on airfoil experimental data. [default = 1.7]
+                                default: 1.7
+                                minimum: 0.
+                            T_VL:
+                                type: number
+                                description: Initial value of the time constant associated with the vortex advection process; it represents the non-dimensional time in semi-chords, needed for a vortex to travel from LE to trailing edge (TE); it is used in the expression of Cvn. It depends on Re, M (weakly), and airfoil. [valid range = 6 - 13, default = 11]
+                                default: 11
+                                minimum: 6.
+                                minimum: 13.
+                            b1:
+                                type: number
+                                description: Constant in the expression of phi_alpha^c and phi_q^c.  This value is relatively insensitive for thin airfoils, but may be different for turbine airfoils. [from experimental results, defaults to 0.14]
+                                default: 0.14
+                            b2:
+                                type: number
+                                description: Constant in the expression of phi_alpha^c and phi_q^c.  This value is relatively insensitive for thin airfoils, but may be different for turbine airfoils. [from experimental results, defaults to 0.53]
+                                default: 0.53
+                            b5:
+                                type: number
+                                description: Constant in the expression of K'''_q,cm_q^nc, and k_m,q.  [from  experimental results, defaults to 5]
+                                default: 5.
+                            A1:
+                                type: number
+                                description: Constant in the expression of phi_alpha^c and phi_q^c.  This value is relatively insensitive for thin airfoils, but may be different for turbine airfoils. [from experimental results, defaults to 0.3]
+                                default: 0.3
+                            A2:
+                                type: number
+                                description: Constant in the expression of phi_alpha^c and phi_q^c.  This value is relatively insensitive for thin airfoils, but may be different for turbine airfoils. [from experimental results, defaults to 0.7]
+                                default: 0.7
+                            A5:
+                                type: number
+                                description: Constant in the expression of K'''_q,cm_q^nc, and k_m,q. [from experimental results, defaults to 1]
+                                default: 1.
+                            S1:
+                                type: number
+                                description: Constant in the f curve best-fit for alpha0<=AOA<=alpha1; by definition it depends on the airfoil.
+                                default: 0.
+                            S2:
+                                type: number
+                                description: Constant in the f curve best-fit for AOA> alpha1; by definition it depends on the airfoil.
+                                default: 0.
+                            S3:
+                                type: number
+                                description: Constant in the f curve best-fit for alpha2<=AOA< alpha0; by definition it depends on the airfoil.
+                                default: 0.
+                            S4:
+                                type: number
+                                description: Constant in the f curve best-fit for AOA< alpha2; by definition it depends on the airfoil.
+                                default: 0.
+                            cn1:
+                                type: number
+                                description: Critical value of C0n at leading edge separation. It should be extracted from airfoil data at a given Mach and Reynolds number. It can be calculated from the static value of Cn at either the break in the pitching moment or the loss of chord force at the onset of stall. It is close to the condition of maximum lift of the airfoil at low Mach numbers.
+                            cn2:
+                                type: number
+                                description: As Cn1 for negative AOAs
+                            St_sh:
+                                type: number
+                                description: Strouhal's shedding frequency constant. [default = 0.19]
+                                default: 0.19
+                            cd0:
+                                type: number
+                                description: 2D drag coefficient value at 0-lift.
+                            cm0:
+                                type: number
+                                description: 2D pitching moment coefficient about 1/4-chord location, at 0-lift, positive if nose up.
+                                default: 0.
+                            k0:
+                                type: number
+                                description: Constant in the \hat(x)_cp curve best-fit; = (\hat(x)_AC-0.25).
+                                default: 0.
+                            k1:
+                                type: number
+                                description: Constant in the \hat(x)_cp curve best-fit.
+                                default: 0.
+                            k2:
+                                type: number
+                                description: Constant in the \hat(x)_cp curve best-fit.
+                                default: 0.
+                            k3:
+                                type: number
+                                description: Constant in the \hat(x)_cp curve best-fit.
+                                default: 0.
+                            k1_hat:
+                                type: number
+                                description: Constant in the expression of Cc due to leading edge vortex effects.
+                                default: 0.
+                            x_cp_bar:
+                                type: number
+                                description: Constant in the expression of \hat(x)_cp^v. [default = 0.2]
+                                default: 0.2
+                            UACutout:
+                                type: number
+                                description: Angle of attack above which unsteady aerodynamics are disabled (deg). [Specifying the string "Default" sets UACutout to 45 degrees]
+                                units: deg
+                                default: 45
+                            filtCutOff:
+                                type: number
+                                description: Cut-off frequency (-3 dB corner frequency) for low-pass filtering the AoA input to UA, as well as the 1st and 2nd derivatives (Hz) [default = 20]
+                                units: Hz
+                                default: 20
     materials:
         type: array
-        description: Database of the materials
+        description: Database of the materials. The schema enforces that the fields :code:`name`, :code:`orth`, :code:`rho`, :code:`E`, and :code:`nu` are specified. For composites, direction 1 is aligned with the main fiber direction, direction 2 is in the plane transverse to the fibers, and direction 3 is perspendicular to the laminate plane. Note that fiber angles are specified in :code:`internal_structure_2d_fem` of the :code:`component` :code:`blade`.
         items:
             type: object
             required:
@@ -2112,21 +2367,21 @@ properties:
                     description: Name of the material
                 description:
                     type: string
-                    description: Optional field describing the material
+                    description: Optional string to describe the origin of the material, for example referencing a report or a paper
                 source:
                     type: string
                     description: Optional field describing where the data come from
                 orth:
                     type: integer
-                    description: Flag to switch between isotropic (0) and orthotropic (1) materials
+                    description: Flag specifying whether a material is isotropic (0) or orthotropic (1). This determines whether some of the fields below are specified as a float or an array of floats.
                 rho:
-                    description: Density of the material. For composites, this is the density of the laminate once cured
+                    description: Density of the material. For composites, this is the density of the laminate once cured.
                     type: number
                     units: kg/m3
                     minimum: 0
                     maximum: 20000
                 E:
-                    description: Stiffness modulus. For orthotropic materials, it consists of an array with E11, E22 and E33.
+                    description: Stiffness modulus. For orthotropic materials, it consists of an array with E11, E22, and E33.
                     oneOf:
                         - type: number
                           units: Pa
@@ -2140,7 +2395,7 @@ properties:
                             uniqueItems: false
                             minimum: 0
                 G:
-                    description: Shear stiffness modulus. For orthotropic materials, it consists of an array with G12, G13 and G23
+                    description: Shear stiffness modulus. For orthotropic materials, it consists of an array with G12, G13, and G23.
                     oneOf:
                         - type: number
                           units: Pa
@@ -2168,7 +2423,7 @@ properties:
                             maxItems: 3
                             uniqueItems: false
                 alpha:
-                    description: Thermal coefficient of expansion
+                    description: Thermal coefficient of expansion. For orthotropic materials, it consists of an array with alpha11, alpha22, and alpha33.
                     oneOf:
                         - type: number
                           units: 1/K
@@ -2180,7 +2435,7 @@ properties:
                             maxItems: 3
                             uniqueItems: false
                 Xt:
-                    description: Ultimate tensile strength. For orthotropic materials, it consists of an array with the strength in directions 11, 22 and 33. The values must be positive
+                    description: Ultimate tensile strength. For orthotropic materials, it consists of an array with Xt11, Xt22, and Xt33.
                     oneOf:
                         - type: number
                           units: Pa
@@ -2194,7 +2449,7 @@ properties:
                             uniqueItems: false
                             minimum: 0
                 Xc:
-                    description: Ultimate compressive strength. For orthotropic materials, it consists of an array with the strength in directions 11, 22 and 33. The values must be positive
+                    description: Ultimate compressive strength. For orthotropic materials, it consists of an array with Xc11, Xc22, and Xc33. Values are defined positive.
                     oneOf:
                         - type: number
                           units: Pa
@@ -2222,7 +2477,7 @@ properties:
                             uniqueItems: false
                             minimum: 0
                 S:
-                    description: Ultimate shear strength. For orthotropic materials, it consists of an array with the strength in directions 12, 13 and 23
+                    description: Ultimate shear strength. For orthotropic materials, it consists of an array with the strength in directions 12, 13 and 23. Values are defined positive.
                     oneOf:
                         - type: number
                           units: Pa
@@ -2237,7 +2492,7 @@ properties:
                             minimum: 0
                 ply_t:
                     type: number
-                    description: Ply thickness of the composite material
+                    description: Ply thickness of a composite material. The unit of measure is m. The actual laminate thickness is defined in the fields :code:`components`.
                     units: m
                     minimum : 0
                     maximum: 0.1
@@ -2249,19 +2504,19 @@ properties:
                     maximum: 1000
                 fvf:
                     type: number
-                    description: Fiber volume fraction of the composite material
+                    description: Fiber volume fraction of a composite material. The minimum values is 0 (only matrix), the maximum value is 1 (only fibers).
                     units: none
                     minimum : 0
                     maximum: 1
                 fwf:
                     type: number
-                    description: Fiber weight fraction of the composite material
+                    description: Fiber weight fraction of a composite material. The minimum values is 0 (only matrix), the maximum value is 1 (only fibers).
                     units: none
                     minimum : 0
                     maximum: 1
                 fiber_density:
                     type: number
-                    description: Density of the fibers of a composite material.
+                    description: Density of the fibers of a composite material. Standard glass fiber has a fiber density of approximately 2600 kg/m3, while standard carbon fiber has a fiber density of approximately 1800 kg/m3.
                     units: kg/m3
                     minimum : 0
                     maximum: 10000
@@ -2271,37 +2526,37 @@ properties:
                     units: kg/m2
                     minimum : 0
                     maximum: 10000
-                component_id:
+                manufacturing_id:
                     type: integer
-                    description: Flag used by the NREL blade cost model https://www.nrel.gov/docs/fy19osti/73585.pdf to define the manufacturing process behind the laminate. 0 - coating, 1 - sandwich filler , 2 - shell skin, 3 - shear webs, 4 - spar caps, 5 - TE reinf.
+                    description: Flag to define the manufacturing process behind the laminate, for example 0 - coating, 1 - sandwich filler , 2 - shell skin, 3 - shear webs, 4 - spar caps, 5 - TE reinf.
                     units: none
                     enum: [0,1,2,3,4,5]
                 waste:
                     type: number
-                    description: Fraction of material that ends up wasted during manufacturing. This quantity is used in the NREL blade cost model https://www.nrel.gov/docs/fy19osti/73585.pdf
+                    description: Fraction of material that ends up wasted during manufacturing.
                     units: none
                     minimum : 0
                     maximum: 1
                 roll_mass:
                     type: number
-                    description: Mass of a fabric roll. This quantity is used in the NREL blade cost model https://www.nrel.gov/docs/fy19osti/73585.pdf
+                    description: Mass of a fabric roll.
                     units: kg
                     minimum : 0
                     maximum: 10000
                 GIc:
                     type: number
-                    description: Mode 1 critical energy-release rate. It is used by NuMAD from Sandia National Laboratories
+                    description: Mode 1 critical energy-release rate.
                     units: J/m^2
                 GIIc:
                     type: number
-                    description: Mode 2 critical energy-release rate. It is used by NuMAD from Sandia National Laboratories
+                    description: Mode 2 critical energy-release rate.
                     units: J/m^2
                 alp0:
                     type: number
-                    description: Fracture angle under pure transverse compression. It is used by NuMAD from Sandia National Laboratories
-                    units: rad
+                    description: Fracture angle under pure transverse compression.
+                    units: deg
                 A:
-                    description: Fatigue S/N curve fitting parameter S=A*N^(-1/m)
+                    description: Fatigue S/N curve fitting parameter S=A*N^(-1/m).
                     oneOf:
                         - type: number
                           units: none
@@ -2351,6 +2606,7 @@ properties:
                             default: -1.0
     control:
         type: object
+        description: Dictionary reporting the data describing the wind turbine controller
         required:
             - supervisory
             - torque
@@ -2388,17 +2644,30 @@ properties:
                 properties:
                     min_pitch:
                         type: number
-                        description: Minimum pitch angle, where the default is 0 degrees. It is used by the ROSCO controller (https://github.com/NREL/ROSCO)
-                        units: rad
+                        description: Minimum pitch angle, where the default is 0 deg
+                        units: deg
                         minimum: -0.5
-                        maximum: 1.
+                        maximum: 90.
                         default: 0
+                    max_pitch:
+                        type: number
+                        description: Maximum pitch angle, where the default is 90 deg
+                        units: deg
+                        minimum: 10.
+                        maximum: 120.
+                        default: 90.
                     max_pitch_rate:
                         type: number
                         description: Maximum pitch rate of the rotor blades.
-                        units: rad/s
+                        units: deg/s
                         minimum: 0
-                        maximum: 0.2
+                        maximum: 30.
+                    ps_percent:
+                        type: number
+                        description: Nondimensional factor shaving peak thrust. 1 means no peak thrust shaving
+                        minimum: 0
+                        default: 0.8
+                        maximum: 1.
             torque:
                 type: object
                 required:
@@ -2419,18 +2688,19 @@ properties:
                         maximum: 15
                     VS_minspd:
                         type: number
-                        description: Minimum rotor speed. It is used by the ROSCO controller (https://github.com/NREL/ROSCO)
-                        units: rad/s
+                        description: Minimum rotor speed.
+                        units: rpm
                         minimum: 0
-                        maximum: 5
+                        maximum: 20.
                     VS_maxspd:
                         type: number
-                        description: Maximum rotor speed. It is used by the ROSCO controller (https://github.com/NREL/ROSCO)
-                        units: rad/s
+                        description: Maximum rotor speed.
+                        units: rpm
                         minimum: 0
-                        default: 10.
+                        default: 100.
     environment:
         type: object
+        description: The field :code:`environment` includes the data characterizing air and water where the wind turbine operates.
         required:
             - air_density
             - air_dyn_viscosity
@@ -2446,6 +2716,8 @@ properties:
             - soil_poisson
             - air_pressure
             - air_vapor_pressure
+            - significant_wave_height
+            - significant_wave_period
         properties:
             gravity:
                 type: number
@@ -2540,12 +2812,28 @@ properties:
                 default: 0.4
             V_mean:
                 type: number
+                units: m / s
                 default: 0.
                 minimum: 0.
                 maximum: 2.e+1
                 description: Average inflow wind speed. If different than 0, this will overwrite the V mean of the IEC wind class
+            significant_wave_height:
+                type: number
+                units: m
+                default: 0.
+                minimum: 0.
+                maximum: 3.e+1
+                description: Significant wave height at the site
+            significant_wave_period:
+                type: number
+                units: s
+                default: 0.
+                minimum: 0.
+                maximum: 3.e+2
+                description: Significant wave period at the site
     bos:
         type: object
+        description: Data for a balance of station cost analysis.
         default: {}
         properties:
             plant_turbine_spacing:
@@ -2662,6 +2950,7 @@ properties:
                 default: 0.0
     costs:
         type: object
+        description: Data for a levelized cost of energy analysis.
         properties:
             wake_loss_factor:
                 type: number
@@ -2879,6 +3168,185 @@ properties:
                 minimum: 0.
                 maximum: 1.
                 default: 0.071
+    outputs:
+        type: object
+        description: Modal response and loads and performance metrics describing the turbine
+        properties:
+            solver:
+                type: string
+                description: Name and version of the numerical solver used to generate the outputs
+            cases:
+                type: array
+                description: Data points where outputs are computed at varying wind speed, rotor speed, etc.
+                items:
+                    type: object
+                    properties:
+                        configuration:
+                            type: object
+                            properties:
+                                wind_speed:
+                                    type: number
+                                    description: Average wind speed measured at hub height corresponding to the outputs
+                                    units: m/s
+                                    minimum: 0.
+                                    maximum: 200.
+                                rotor_speed:
+                                    type: number
+                                    description: Rotor speed corresponding to the outputs
+                                    units: rpm
+                                    minimum: 0.
+                                    maximum: 200.
+                                blade_pitch:
+                                    type: number
+                                    description: Collective blade pitch angle corresponding to the outputs
+                                    units: deg
+                                    minimum: 0.
+                                    maximum: 90.
+                                tip_speed_ratio:
+                                    type: number
+                                    description: Rotor tip speed ratio corresponding to the outputs
+                                    minimum: 0.
+                                    maximum: 50.
+                        integrated:
+                            type: object
+                            description: Outputs integrated along blade span
+                            properties:
+                                mechanical_power:
+                                    type: number
+                                    description: Mechanical power of the rotor measured at the high speed shaft
+                                    units: W
+                                electrical_power:
+                                    type: number
+                                    description: Eelectrical power of the rotor measured at the output of the generator
+                                    units: W
+                                generator_torque:
+                                    type: number
+                                    description: Electrical torque of the generator
+                                    units: N*m
+                                rotor_thrust:
+                                    type: number
+                                    description: Aerodynamic thrust of the rotor measured at the hub
+                                    units: N
+                                rotor_torque:
+                                    type: number
+                                    description: Mechanical torque of the rotor measured at the hub
+                                    units: N*m
+                        distributed:
+                            type: object
+                            description: Outputs distributed along blade span
+                            properties:
+                                aero_force_axial:
+                                    type: object
+                                    description: Aerodynamic loading along the axial rotor direction
+                                    properties:
+                                        grid:
+                                            $ref: "#/definitions/distributed_data/grid_nd"
+                                        values:
+                                            $ref: "#/definitions/distributed_data/force"
+                                aero_force_tangential:
+                                    type: object
+                                    description: Aerodynamic loading along the tangential rotor direction
+                                    properties:
+                                        grid:
+                                            $ref: "#/definitions/distributed_data/grid_nd"
+                                        values:
+                                            $ref: "#/definitions/distributed_data/force"
+                                blade_translation_deflection_x_pitching:
+                                    type: object
+                                    description: Blade deflection with respect to the undeflected configuration along the x axis for the pitching blade root coordinate system
+                                    properties:
+                                        grid:
+                                            $ref: "#/definitions/distributed_data/grid_nd"
+                                        values:
+                                            $ref: "#/definitions/distributed_data/length"
+                                blade_translation_deflection_y_pitching:
+                                    type: object
+                                    description: Blade deflection with respect to the undeflected configuration along the y axis for the pitching blade root coordinate system
+                                    properties:
+                                        grid:
+                                            $ref: "#/definitions/distributed_data/grid_nd"
+                                        values:
+                                            $ref: "#/definitions/distributed_data/length"
+                                blade_translation_deflection_z_pitching:
+                                    type: object
+                                    description: Blade deflection with respect to the undeflected configuration along the z axis for the pitching blade root coordinate system
+                                    properties:
+                                        grid:
+                                            $ref: "#/definitions/distributed_data/grid_nd"
+                                        values:
+                                            $ref: "#/definitions/distributed_data/angle"
+                                blade_rotation_deflection_z_pitching:
+                                    type: object
+                                    description: Blade rotation with respect to the undeflected configuration along the z axis for the pitching blade root coordinate system
+                                    properties:
+                                        grid:
+                                            $ref: "#/definitions/distributed_data/grid_nd"
+                                        values:
+                                            $ref: "#/definitions/distributed_data/length"
+                                blade_fx_pitching:
+                                    type: object
+                                    description: Distribution along blade span of the reaction force along the x axis (edgewise shear). The force follows the pitching blade root coordinate system
+                                    properties:
+                                        grid:
+                                            $ref: "#/definitions/distributed_data/grid_nd"
+                                        values:
+                                            $ref: "#/definitions/distributed_data/force"
+                                blade_fy_pitching:
+                                    type: object
+                                    description: Distribution along blade span of the reaction force along the y axis (flapwise shear). The force follows the pitching blade root coordinate system
+                                    properties:
+                                        grid:
+                                            $ref: "#/definitions/distributed_data/grid_nd"
+                                        values:
+                                            $ref: "#/definitions/distributed_data/force"
+                                blade_fz_pitching:
+                                    type: object
+                                    description: Distribution along blade span of the reaction force along the z axis (axial). The force follows the pitching blade root coordinate system
+                                    properties:
+                                        grid:
+                                            $ref: "#/definitions/distributed_data/grid_nd"
+                                        values:
+                                            $ref: "#/definitions/distributed_data/force"
+                                blade_mx_pitching:
+                                    type: object
+                                    description: Distribution along blade span of the reaction moment along the x axis (flapwise moment). The moment follows the pitching blade root coordinate system
+                                    properties:
+                                        grid:
+                                            $ref: "#/definitions/distributed_data/grid_nd"
+                                        values:
+                                            $ref: "#/definitions/distributed_data/moment"
+                                blade_my_pitching:
+                                    type: object
+                                    description: Distribution along blade span of the reaction moment along the y axis (edgewise moment). The moment follows the pitching blade root coordinate system
+                                    properties:
+                                        grid:
+                                            $ref: "#/definitions/distributed_data/grid_nd"
+                                        values:
+                                            $ref: "#/definitions/distributed_data/moment"
+                                blade_mz_pitching:
+                                    type: object
+                                    description: Distribution along blade span of the reaction moment along the z axis (torsional moment). The moment follows the pitching blade root coordinate system
+                                    properties:
+                                        grid:
+                                            $ref: "#/definitions/distributed_data/grid_nd"
+                                        values:
+                                            $ref: "#/definitions/distributed_data/moment"
+                        frequency_undamped:
+                            type: array
+                            description: Undamped natural frequencies of the system
+                            items:
+                                type: number
+                                units: Hz
+                                minimum: 0.
+                                uniqueItems: false
+                        damping_ratio:
+                            type: array
+                            description: Critical damping ratios of the modes characterizing the system
+                            items:
+                                type: number
+                                minimum: 0.
+                                uniqueItems: false
+
 definitions:
     distributed_data:
         grid_nd:
@@ -2892,26 +3360,16 @@ definitions:
                 minimum: 0.0
                 maximum: 1.0
                 uniqueItems: true
-        grid_al:
-            type: array
-            description: Grid along an arc length, expressed non dimensionally where 0 is the leading edge, -1 is the trailing edge on the pressure side and +1 the trailing edge on the pressure side
-            items:
-                type: number
-                units: none
-                minItems: 2
-                minimum: -1.0
-                maximum: 1.0
-                uniqueItems: true
         grid_aoa:
             type: array
             description: Grid of angles of attack to describe polars
-            default: [-3.14159265359, 3.14159265359]
+            default: [-180, 180]
             items:
                 type: number
-                units: radians
+                units: deg
                 minItems: 2
-                minimum: -3.14159265359
-                maximum:  3.14159265359
+                minimum: -180
+                maximum:  180
                 uniqueItems: true
         polar_coeff:
             type: array
@@ -2919,12 +3377,6 @@ definitions:
             items:
                 type: number
                 units: none
-                minItems: 2
-                uniqueItems: false
-        strings:
-            type: array
-            items:
-                type: string
                 minItems: 2
                 uniqueItems: false
         nd:
@@ -2945,133 +3397,55 @@ definitions:
                 units: meter
                 minItems: 2
                 uniqueItems: false
+        force:
+            type: array
+            description: Loading described along a beam, expressed in N per meter
+            default: [0.0, 0.0]
+            items:
+                type: number
+                units: N / m
+                minItems: 2
+                uniqueItems: false
+        moment:
+            type: array
+            description: Loading described along a beam, expressed in N m per meter
+            default: [0.0, 0.0]
+            items:
+                type: number
+                units: N * m / m
+                minItems: 2
+                uniqueItems: false
         angle:
             type: array
-            description: Angle quantity along a beam, expressed in radians
+            description: Angle quantity along a beam, expressed in deg
             default: [0.0, 0.0]
             items:
                 type: number
-                units: radians
-                minItems: 2
-                uniqueItems: false
-        mass_length:
-            type: array
-            description: Mass per unit length along a beam, expressed in kilogram per meter
-            default: [0.0, 0.0]
-            items:
-                type: number
-                units: kg/m
-                minItems: 2
-                uniqueItems: false
-        area:
-            type: array
-            description: Cross sectional area along a beam, expressed in meter squared
-            default: [0.0, 0.0]
-            items:
-                type: number
-                units: m2
-                minItems: 2
-                uniqueItems: false
-                description: Cross sectional area
-        elast_mod:
-            type: array
-            description: Modulus of elasticity of a material along a beam, expressed in Newton over meter squared
-            default: [0.0, 0.0]
-            items:
-                type: number
-                units: N m2
-                minItems: 2
-                uniqueItems: false
-                description: Modulus of elasticity
-        shear_mod:
-            type: array
-            description: Shear modulus of elasticity of a material along a beam, expressed in Newton over meter squared
-            default: [0.0, 0.0]
-            items:
-                type: number
-                units: N/m2
-                minItems: 2
-                uniqueItems: false
-                description: Shear modulus of elasticity
-        area_moment:
-            type: array
-            description: Area moment of inertia of a section along a beam, expressed in meter to the power of four
-            default: [0.0, 0.0]
-            items:
-                type: number
-                units: m4
-                minItems: 2
-                uniqueItems: false
-                description: Area moment of inertia
-        mass_moment:
-            type: array
-            description: Mass moment of inertia of a section along a beam, expressed in kilogram times meter squared per meter
-            default: [0.0, 0.0]
-            items:
-                type: number
-                units: kg*m2/m
-                minItems: 2
-                uniqueItems: false
-                description: Mass moment of inertia per unit span
-        tors_stiff_const:
-            type: array
-            description: Torsional stiffness constant with respect to ze axis at the shear center [m4/rad]. For a circular section only this is identical to the polar moment of inertia
-            default: [0.0, 0.0]
-            items:
-                type: number
-                units: m4/rad
-                minItems: 2
-                uniqueItems: false
-        shear_stiff:
-            type: array
-            description: Shearing stiffness along the beam
-            default: [0.0, 0.0]
-            items:
-                type: number
-                units: N
-                minItems: 2
-                uniqueItems: false
-        axial_stiff:
-            type: array
-            description: Axial stiffness EA along the beam
-            default: [0.0, 0.0]
-            items:
-                type: number
-                units: N
-                minItems: 2
-                uniqueItems: false
-        bending_stiff:
-            type: array
-            description: Bending stiffness E11-E22 along the beam
-            default: [0.0, 0.0]
-            items:
-                type: number
-                units: N/m2
-                minItems: 2
-                uniqueItems: false
-        tors_stiff:
-            type: array
-            description: Torsional stiffness GJ along the beam
-            default: [0.0, 0.0]
-            items:
-                type: number
-                units: N/m2
+                units: deg
                 minItems: 2
                 uniqueItems: false
         nd_arc_position:
             type: object
-            description: non-dimensional location of the point along the non-dimensional arc length
+            description: Non-dimensional location of the point along the non-dimensional arc length
             properties:
                 grid:
                     $ref: "#/definitions/distributed_data/grid_nd"
                 values:
-                    $ref: "#/definitions/distributed_data/grid_al"
-                fixed:
-                    type: string
-                    description: Name of the layer to lock the edge
+                    type: array
+                    description: Grid along an arc length, expressed non dimensionally where 0 is the trailing edge on the suction side and 1 is the trailing edge on the pressure side. The arc starts and ends at the mid-point of the trailing edge in the case of open trailing edges.
+                    items:
+                        type: number
+                        units: none
+                        minItems: 2
+                        minimum: -1.0
+                        maximum: 1.0
+                        uniqueItems: true
+                        fixed:
+                            type: string
+                            description: Name of the layer to lock the edge
         offset:
             type: object
-            description: dimensional offset in respect to the pitch axis along the x axis, which is the chord line rotated by a user-defined angle. Negative values move the midpoint towards the leading edge, positive towards the trailing edge
+            description: Dimensional offset in respect to the reference axis along the x axis, which is the chord line rotated by a user-defined angle. Negative values move the midpoint towards the leading edge, positive towards the trailing edge
             required:
                 - grid
                 - values
@@ -3082,7 +3456,7 @@ definitions:
                     $ref: "#/definitions/distributed_data/length"
         rotation:
             type: object
-            description: rotation of the chord axis around the pitch axis
+            description: The rotation defines the angle between the chord line and the y axis and it has the opposite sign of the twist. For shear webs perpendicular to the chord line in the section(s) where twist is zero, it is easiest to simply use the keyword fixed :code:`twist`. Blades with straight shear webs will always have the field rotation equal to the twist plus/minus a constant angle and, assuming a non-swept blade (zero values in the blade y reference axis), a linear field offset.
             properties:
                 grid:
                     $ref: "#/definitions/distributed_data/grid_nd"
@@ -3093,7 +3467,7 @@ definitions:
                     description: Name of the layer to lock the edge
         axis_coordinates:
             type: object
-            description: The reference system is located at blade root, with z aligned with the pitch axis, x pointing towards the suction sides of the airfoils (standard prebend will be negative) and y pointing to the trailing edge (standard sweep will be positive)
+            description: For the blade, the reference system is located at blade root, with z aligned with the pitch axis, x pointing towards the suction sides of the airfoils (standard prebend will be negative) and y pointing to the trailing edge (standard sweep will be positive). The blade coordinate system is the one of `BeamDyn  <https://openfast.readthedocs.io/en/master/source/user/beamdyn/input_files.html#beamdyn-primary-input-file>`_ of OpenFAST and it is shown in the figure below. The consequences of this reference system is that standard wind turbine blades have positive twist inboard and close to zero or even slightly negative twist outboard, zero or negative x values for standard prebent blades, and positive y values for backward swept blades. The blade main direction is expressed along z, and total blade length must be computed integrating the fields x, y, and z three-dimensionally. For tower and moniopile, :code:`x` is parallel to the ground pointing downwind, :code:`y` is parallel to the ground and to the rotor plane, and :code:`z` is perpendicular to the ground pointing upwards. Standard monopiles are only defined along :code:`z`.
             required:
                 - x
                 - y
@@ -3130,431 +3504,324 @@ definitions:
                         values:
                             $ref: "#/definitions/distributed_data/length"
     beam:
-        timoschenko_hawc:
-            type: object
-            description: Timoschenko beam as in HAWC2
-            required:
-                - reference_axis
-                - A
-                - E
-                - G
-                - I_x
-                - I_y
-                - K
-                - dm
-                - k_x
-                - k_y
-                - pitch
-                - ri_x
-                - ri_y
-                - x_cg
-                - x_e
-                - x_sh
-                - y_cg
-                - y_e
-                - y_sh
-            properties:
-                reference_axis:
-                    $ref: "#/definitions/distributed_data/axis_coordinates"
-                A:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/area"
-                E:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/elast_mod"
-                G:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/shear_mod"
-                I_x:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/area_moment"
-                I_y:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/area_moment"
-                K:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/tors_stiff_const"
-                dm:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/mass_length"
-                k_x:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/nd"
-                k_y:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/nd"
-                pitch:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/angle"
-                ri_x:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/length"
-                ri_y:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/length"
-                x_cg:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/length"
-                x_e:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/length"
-                x_sh:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/length"
-                y_cg:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/length"
-                y_e:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/length"
-                y_sh:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/length"
-        cp_lambda_beam:
-            type: object
-            description: Geometrically exact beams with simplified properties
-            required:
-                - reference_axis
-                - T11
-                - T22
-                - EA
-                - E11
-                - E22
-                - GJ
-                - x_ce
-                - y_ce
-                - dm
-                - delta_theta
-                - x_sh
-                - y_sh
-                - J1
-                - J2
-                - J3
-                - x_cg
-                - y_cg
-            properties:
-                reference_axis:
-                    $ref: "#/definitions/distributed_data/axis_coordinates"
-                T11:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/shear_stiff"
-                T22:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/shear_stiff"
-                EA:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/axial_stiff"
-                E11:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/bending_stiff"
-                E22:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/bending_stiff"
-                GJ:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/tors_stiff"
-                x_ce:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/length"
-                y_ce:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/length"
-                dm:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/mass_length"
-                delta_theta:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/angle"
-                x_sh:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/length"
-                y_sh:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/length"
-                J1:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/mass_moment"
-                J2:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/mass_moment"
-                J3:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/mass_moment"
-                x_cg:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/length"
-                y_cg:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            $ref: "#/definitions/distributed_data/length"
-        six_x_six:
-            type: object
-            required:
-                - reference_axis
-                - stiff_matrix
-            properties:
-                reference_axis:
-                    $ref: "#/definitions/distributed_data/axis_coordinates"
-                stiff_matrix:
-                    type: object
-                    required:
-                        - grid
-                        - values
-                    properties:
-                        grid:
-                            $ref: "#/definitions/distributed_data/grid_nd"
-                        values:
-                            type: array
-                            items:
-                                type: array
-                                description: Stiffness matrix 6x6, only upper diagonal reported line by line (21 elements), specified at each grid point
-                                minItems: 21
-                                maxItems: 21
-                                uniqueItems: false
+        type: object
+        description: The equivalent elastic properties of a beam are defined in :code:`elastic_properties_mb`. Here, 6x6 stiffness and mass matrices are defined. Out of 36 entries of the matrices, given the symmetry, the yaml file requires the definition of only 21 values as inputs for the stiffness matrix, whereas the inertia matrix is defined in terms of unit mass, coordinates of the center of mass, and mass moments of inertia.
+        required:
+            - reference_axis
+            - twist
+            - stiffness_matrix
+            - inertia_matrix
+            - structural_damping
+        properties:
+            reference_axis:
+                $ref: "#/definitions/distributed_data/axis_coordinates"
+            twist:
+                type: object
+                description: The array :code:`values` specifies the structural twist along blade span.
+                required:
+                    - grid
+                    - values
+                properties:
+                    grid:
+                        $ref: "#/definitions/distributed_data/grid_nd"
+                    values:
+                        $ref: "#/definitions/distributed_data/angle"
+            stiffness_matrix:
+                type: object
+                required:
+                    - grid
+                    - K44
+                    - K55
+                properties:
+                    grid:
+                        $ref: "#/definitions/distributed_data/grid_nd"
+                    K11:
+                        type: array
+                        description: Distribution of the K11 element of the stiffness matrix along blade span. K11 corresponds to the shear stiffness along the x axis (in a blade, x points to the trailing edge)
+                        default: [0.0, 0.0]
+                        items:
+                            type: number
+                            minItems: 2
+                            uniqueItems: false
+                    K22:
+                        type: array
+                        description: Distribution of the K22 element of the stiffness matrix along blade span. K22 corresponds to the shear stiffness along the y axis (in a blade, y points to the suction side)
+                        default: [0.0, 0.0]
+                        items:
+                            type: number
+                            minItems: 2
+                            uniqueItems: false
+                    K33:
+                        type: array
+                        description: Distribution of the K33 element of the stiffness matrix along blade span. K33 corresponds to the axial stiffness along the z axis (in a blade, z runs along the span and points to the tip)
+                        default: [0.0, 0.0]
+                        items:
+                            type: number
+                            minItems: 2
+                            uniqueItems: false
+                    K44:
+                        type: array
+                        description: Distribution of the K44 element of the stiffness matrix along blade span. K44 corresponds to the bending stiffness around the x axis (in a blade, x points to the trailing edge and K44 corresponds to the flapwise stiffness)
+                        default: [0.0, 0.0]
+                        items:
+                            type: number
+                            minItems: 2
+                            uniqueItems: false
+                    K55:
+                        type: array
+                        description: Distribution of the K55 element of the stiffness matrix along blade span. K55 corresponds to the bending stiffness around the y axis (in a blade, y points to the suction side and K55 corresponds to the edgewise stiffness)
+                        default: [0.0, 0.0]
+                        items:
+                            type: number
+                            minItems: 2
+                            uniqueItems: false
+                    K66:
+                        type: array
+                        description: Distribution of K66 element of the stiffness matrix along blade span. K66 corresponds to the torsional stiffness along the z axis (in a blade, z runs along the span and points to the tip)
+                        default: [0.0, 0.0]
+                        items:
+                            type: number
+                            minItems: 2
+                            uniqueItems: false
+                    K12:
+                        type: array
+                        description: Distribution of the K12 element of the stiffness matrix along blade span. K12 is a cross term between shear terms
+                        default: [0.0, 0.0]
+                        items:
+                            type: number
+                            minItems: 2
+                            uniqueItems: false
+                    K13:
+                        type: array
+                        description: Distribution of the K13 element of the stiffness matrix along blade span. K13 is a cross term shear - axial
+                        default: [0.0, 0.0]
+                        items:
+                            type: number
+                            minItems: 2
+                            uniqueItems: false
+                    K14:
+                        type: array
+                        description: Distribution of the K14 element of the stiffness matrix along blade span. K14 is a cross term shear - bending
+                        default: [0.0, 0.0]
+                        items:
+                            type: number
+                            minItems: 2
+                            uniqueItems: false
+                    K15:
+                        type: array
+                        description: Distribution of the K15 element of the stiffness matrix along blade span. K15 is a cross term shear - bending
+                        default: [0.0, 0.0]
+                        items:
+                            type: number
+                            minItems: 2
+                            uniqueItems: false
+                    K16:
+                        type: array
+                        description: Distribution of the K16 element of the stiffness matrix along blade span. K16 is a cross term shear - torsion
+                        default: [0.0, 0.0]
+                        items:
+                            type: number
+                            minItems: 2
+                            uniqueItems: false
+                    K23:
+                        type: array
+                        description: Distribution of the K23 element of the stiffness matrix along blade span. K23 is a cross term shear - axial
+                        default: [0.0, 0.0]
+                        items:
+                            type: number
+                            minItems: 2
+                            uniqueItems: false
+                    K24:
+                        type: array
+                        description: Distribution of the K24 element of the stiffness matrix along blade span. K24 is a cross term shear - bending
+                        default: [0.0, 0.0]
+                        items:
+                            type: number
+                            minItems: 2
+                            uniqueItems: false
+                    K25:
+                        type: array
+                        description: Distribution of the K25 element of the stiffness matrix along blade span. K25 is a cross term shear - bending
+                        default: [0.0, 0.0]
+                        items:
+                            type: number
+                            minItems: 2
+                            uniqueItems: false
+                    K26:
+                        type: array
+                        description: Distribution of the K26 element of the stiffness matrix along blade span. K26 is a cross term shear - torsion
+                        default: [0.0, 0.0]
+                        items:
+                            type: number
+                            minItems: 2
+                            uniqueItems: false
+                    K34:
+                        type: array
+                        description: Distribution of the K34 element of the stiffness matrix along blade span. K34 is a cross term axial - bending
+                        default: [0.0, 0.0]
+                        items:
+                            type: number
+                            minItems: 2
+                            uniqueItems: false
+                    K35:
+                        type: array
+                        description: Distribution of the K35 element of the stiffness matrix along blade span. K35 is a cross term axial - bending
+                        default: [0.0, 0.0]
+                        items:
+                            type: number
+                            minItems: 2
+                            uniqueItems: false
+                    K36:
+                        type: array
+                        description: Distribution of the K36 element of the stiffness matrix along blade span. K36 is a cross term axial - torsion
+                        default: [0.0, 0.0]
+                        items:
+                            type: number
+                            minItems: 2
+                            uniqueItems: false
+                    K45:
+                        type: array
+                        description: Distribution of the K45 element of the stiffness matrix along blade span. K45 is a cross term flapwise bending - edgewise bending
+                        default: [0.0, 0.0]
+                        items:
+                            type: number
+                            minItems: 2
+                            uniqueItems: false
+                    K46:
+                        type: array
+                        description: Distribution of the K46 element of the stiffness matrix along blade span. K46 is a cross term flapwise bending - torsion
+                        default: [0.0, 0.0]
+                        items:
+                            type: number
+                            minItems: 2
+                            uniqueItems: false
+                    K56:
+                        type: array
+                        description: Distribution of the K56 element of the stiffness matrix along blade span. K56 is a cross term edgewise bending - torsion
+                        default: [0.0, 0.0]
+                        items:
+                            type: number
+                            minItems: 2
+                            uniqueItems: false
+            inertia_matrix:
+                type: object
+                required:
+                    - grid
+                    - mass
+                properties:
+                    grid:
+                        $ref: "#/definitions/distributed_data/grid_nd"
+                    mass:
+                        type: array
+                        description: Mass per unit length along the beam, expressed in kilogram per meter
+                        default: [0.0, 0.0]
+                        items:
+                            type: number
+                            units: kg/m
+                            minItems: 2
+                            uniqueItems: false
+                    cm_x:
+                        description: Distance between the reference axis and the center of mass along the x axis
+                        $ref: "#/definitions/distributed_data/length"
+                    cm_y:
+                        description: Distance between the reference axis and the center of mass along the y axis
+                        $ref: "#/definitions/distributed_data/length"
+                    i_edge:
+                        description: Edgewise mass moment of inertia per unit span (around y axis)
+                        type: array
+                        default: [0.0, 0.0]
+                        items:
+                            type: number
+                            units: kg*m^2
+                            minimum: 0
+                    i_flap:
+                        description: Flapwise mass moment of inertia per unit span (around x axis)
+                        type: array
+                        default: [0.0, 0.0]
+                        items:
+                            type: number
+                            units: kg*m^2
+                            minimum: 0
+                    i_plr:
+                        description: Polar moment of inertia per unit span (around z axis). Please note that for beam-like structures iplr must be equal to iedge plus iflap.
+                        type: array
+                        default: [0.0, 0.0]
+                        items:
+                            type: number
+                            units: kg*m^2
+                            minimum: 0
+                    i_cp:
+                        description: Sectional cross-product of inertia per unit span (cross term x y)
+                        type: array
+                        default: [0.0, 0.0]
+                        items:
+                            type: number
+                            units: kg*m^2
+                            # minimum: 0 # not 100% sure, but i_cp could be negative
+            structural_damping:
+                description: Structural damping of the beam. For now, viscous damping is included
+                type: object
+                properties:
+                    mu:
+                        type: array
+                        default: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+                        description: Six damping coefficients to model viscous damping, where the damping forces are proportional to the strain rate
+                        items:
+                            type: number
+                            minItems: 6
+                            maxItems: 6
+                            uniqueItems: false
+            point_mass:
+                type: object
+                required:
+                    - grid
+                    - mass
+                properties:
+                    grid:
+                        $ref: "#/definitions/distributed_data/grid_nd"
+                    mass:
+                        type: array
+                        description: Point masses distributed along the beam, expressed in kilogram. These can be used to model features such as flanges.
+                        default: [0.0, 0.0]
+                        items:
+                            type: number
+                            units: kg
+                            minItems: 2
+                            uniqueItems: false
+    point_mass:
+        type: object
+        required:
+            - location
+            - mass
+            - inertia
+            - coordinate_system
+        properties:
+            mass:
+                type: number
+                description: Mass of the component modeled as a point
+                units: kg
+                minimum: 0
+            inertia:
+                type: array
+                description: Mass moment of inertia of the component modeled as a point
+                items:
+                    type: number
+                    units: kgm2
+                    minItems: 6
+                    maxItems: 6
+                    uniqueItems: false
+            location:
+                type: array
+                description: Location of the point mass with respect to the coordinate system
+                items:
+                    type: number
+                    units: m
+                    minItems: 3
+                    maxItems: 3
+                    uniqueItems: false
+            coordinate_system:
+                type: string
+                description: Coordinate system used to define the location of the point mass
     filter:
         type: object
         description: Linear filter, could be a LPF, HPF, NF, INF, or user_defined

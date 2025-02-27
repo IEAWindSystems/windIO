@@ -498,8 +498,7 @@ components:
             u_allow_pcent: 8.5
             y_allow_pcent: 1.0
             z_allow_deg: 0.05
-            sigma: 60000
-
+            sigma: 60.e+3
             h_0: 0.05
             C_Cu: 4.786
             C_Fe: 0.556
@@ -533,8 +532,8 @@ components:
                       grid: [0.0, 0.10047454902385111, 0.20094909804770222, 0.30142364707155334, 0.40189819609540445, 0.5023727451192556, 0.6028472941431067, 0.7033218431669578, 0.8037963921908089, 0.90427094121466, 1.0]
                       values: [0.09, 0.0870568244887821, 0.06969791129654272, 0.06659467020278927, 0.048969783194233195, 0.04562355995431616, 0.028128174258004363, 0.025616868141627953, 0.009881156462835017, 0.009941082963793929, 0.005931142626464429]
     floating_platform:
-        transition_piece_mass: 100000.0
-        transition_piece_cost: 100000.0
+        transition_piece_mass: 100.e+3
+        transition_piece_cost: 100.e+3
         joints:
             - name: main_keel
               location: [0.0, 0.0, -20.0]
@@ -986,7 +985,6 @@ materials:
       component_id: 0
    -  name: steel
       description: Steel of the tower and monopile ASTM A572 Grade 50
-      source: http://www.matweb.com/search/DataSheet.aspx?MatGUID=9ced5dc901c54bd1aef19403d0385d7f
       orth: 0
       rho: 7800
       alpha: 0.0
@@ -1004,7 +1002,6 @@ materials:
       unit_cost: 0.7
    -  name: steel_drive
       description: Steel of the drivetrain ASTM 4140 40Cr1Mo28
-      source: http://www.matweb.com/search/DataSheet.aspx?MatGUID=38108bfd64c44b4c9c6a02af78d5b6c6
       orth: 0
       rho: 7850
       alpha: 0.0

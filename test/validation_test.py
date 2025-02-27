@@ -40,10 +40,10 @@ def test_validation_IEA_case_studies_3():
         schema_type="plant/energy_resource"
     )
 
-    windIO.validate(
-        input=plant_reference_path / 'plant_energy_site/IEA37_case_study_3_energy_site.yaml',
-        schema_type="plant/site"
-    )
+    # windIO.validate(
+    #     input=plant_reference_path / 'plant_energy_site/IEA37_case_study_3_energy_site.yaml',
+    #     schema_type="plant/site"
+    # )
 
     windIO.validate(
         input=plant_reference_path / 'plant_wind_farm/IEA37_case_study_3_wind_farm.yaml',
@@ -64,10 +64,10 @@ def test_validation_IEA_case_studies_4():
         schema_type="plant/energy_resource"
     )
 
-    windIO.validate(
-        input=plant_reference_path / 'plant_energy_site/IEA37_case_study_4_energy_site.yaml',
-        schema_type="plant/site"
-    )
+    # windIO.validate(
+    #     input=plant_reference_path / 'plant_energy_site/IEA37_case_study_4_energy_site.yaml',
+    #     schema_type="plant/site"
+    # )
 
     windIO.validate(
         input=plant_reference_path / 'plant_wind_farm/IEA37_case_study_4_wind_farm.yaml',

@@ -1,33 +1,80 @@
 import unittest
 from pathlib import Path
 import windIO
+from windIO.converters.windIO2windIO import v1p0_to_v2p0
 
 from jsonschema import Draft7Validator
 
+turbine_reference_path = Path(windIO.turbine_ex.__file__).parent
 
 class TestRegression(unittest.TestCase):
-    def test_IEA_15_240_RWT(self):
-        path2yaml = Path(__file__).parent / "IEA-15-240-RWT.yaml"
-
-        # Validate the file
-        windIO.validate(path2yaml, "turbine/IEAontology_schema")
-
-        # Verify the file loads
-        windIO.load_yaml(path2yaml)
-
-    def test_IEA_15_240_RWT_VolturnUS_S(self):
-        path2yaml = Path(__file__).parent / "IEA-15-240-RWT_VolturnUS-S.yaml"
-
-        # Validate the file
-        windIO.validate(path2yaml, "turbine/IEAontology_schema")
-
-        # Verify the file loads
-        windIO.load_yaml(path2yaml)
     
+    def test_load_IEA_15_240_RWT(self):
+
+        
+        path2yaml = turbine_reference_path / "IEA-15-240-RWT.yaml"
+
+        # Verify the file loads
+        windIO.load_yaml(path2yaml)
+
+    
+    def test_validate_IEA_15_240_RWT(self):
+
+        path2yaml = turbine_reference_path / "IEA-15-240-RWT.yaml"
+
+        # Validate the file
+        windIO.validate(path2yaml, schema_type="turbine/turbine_schema")
+    
+    def test_load_IEA_15_240_RWT_VolturnUS_S(self):
+
+        path2yaml = turbine_reference_path / "IEA-15-240-RWT_VolturnUS-S.yaml"
+
+        # Verify the file loads
+        windIO.load_yaml(path2yaml)
+
+    
+    def test_validate_IEA_15_240_RWT_VolturnUS_S(self):
+
+        path2yaml = turbine_reference_path / "IEA-15-240-RWT_VolturnUS-S.yaml"
+
+        # Validate the file
+        windIO.validate(path2yaml, schema_type="turbine/turbine_schema")
+
+   
+    def test_v1p0_2p0_converter_IEA_15_240_RWT(self):
+        
+        path1p0 = Path(windIO.converters.v1p0.__file__).parent
+        path2p0 = Path(windIO.converters.v2p0.__file__).parent
+
+        filename_v1p0 = path1p0 / "IEA-15-240-RWT.yaml"
+        filename_v2p0 = path2p0 / "IEA-15-240-RWT.yaml"
+        filename_v1p0 = "/Users/pbortolo/work/3_projects/5_IEAtask37/windIO/windIO/converters/v1p0/IEA-15-240-RWT.yaml"
+        filename_v2p0 = "/Users/pbortolo/work/3_projects/5_IEAtask37/windIO/windIO/converters/v2p0/IEA-15-240-RWT.yaml"
+                 
+        converter = v1p0_to_v2p0(filename_v1p0, filename_v2p0)
+        converter.convert()
+
+        # Now validate the output
+        windIO.validate(filename_v2p0, schema_type="turbine/turbine_schema")
+    
+    def test_v1p0_2p0_converter_IEA_15_240_RWT_VolturnUS_S(self):
+        
+        path1p0 = Path(windIO.converters.v1p0.__file__).parent
+        path2p0 = Path(windIO.converters.v2p0.__file__).parent
+
+        filename_v1p0 = path1p0 / "IEA-15-240-RWT_VolturnUS-S.yaml"
+        filename_v2p0 = path2p0 / "IEA-15-240-RWT_VolturnUS-S.yaml"
+        filename_v1p0 = "/Users/pbortolo/work/3_projects/5_IEAtask37/windIO/windIO/converters/v1p0/IEA-15-240-RWT_VolturnUS-S.yaml"
+        filename_v2p0 = "/Users/pbortolo/work/3_projects/5_IEAtask37/windIO/windIO/converters/v2p0/IEA-15-240-RWT_VolturnUS-S.yaml"
+                 
+        converter = v1p0_to_v2p0(filename_v1p0, filename_v2p0)
+        converter.convert()
+              
     def test_valid_schema(self):
-        schema = windIO.load_yaml(
-            Path(windIO.schemas.turbine.__file__).parent / "IEAontology_schema.yaml",
-        )
+        
+        path2schema = Path(__file__).parent.parent.parent / "windIO" / "schemas" / "turbine" / "turbine_schema.yaml"
+        
+        schema = windIO.load_yaml(path2schema)
 
         Draft7Validator.META_SCHEMA["additionalProperties"] = False
         Draft7Validator.META_SCHEMA["properties"]["definitions"]["additionalProperties"] = True
