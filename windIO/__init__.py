@@ -9,17 +9,17 @@ import json
 from urllib.parse import urljoin
 import xarray as xr
 from typing import Any
+from functools import reduce
+import operator
+import numpy as np
 
 ### API design
 import windIO.examples.plant
 import windIO.examples.turbine
 import windIO.schemas
-import windIO.schemas.plant         # By importing plant and turbine here, we can use the schemas as windIO.schemas.plant and windIO.schemas.turbine
-import windIO.schemas.turbine       # in the calling code after only importing windIO... import windIO; help(windIO.schemas.turbine)
 
 plant_ex = windIO.examples.plant
 turbine_ex = windIO.examples.turbine
-schemas = windIO.schemas
 ### API design
 
 
@@ -85,6 +85,93 @@ def load_yaml(filename: str, loader=XrResourceLoader) -> dict:
     """
     with open(filename) as fid:
         return yaml.load(fid, loader)
+
+def remove_numpy(fst_vt : dict) -> dict:
+    """
+    Recursively converts numpy array elements within a nested dictionary to lists and ensures
+    all values are simple types (float, int, dict, bool, str) for writing to a YAML file.
+
+    Args:
+        fst_vt (dict): The dictionary to process.
+
+    Returns:
+        dict: The processed dictionary with numpy arrays converted to lists and unsupported types to simple types.
+    """
+
+    def get_dict(vartree, branch):
+        return reduce(operator.getitem, branch, vartree)
+
+    # Define conversion dictionary for numpy types
+    conversions = {
+        np.int_: int,
+        np.intc: int,
+        np.intp: int,
+        np.int8: int,
+        np.int16: int,
+        np.int32: int,
+        np.int64: int,
+        np.uint8: int,
+        np.uint16: int,
+        np.uint32: int,
+        np.uint64: int,
+        np.single: float,
+        np.double: float,
+        np.longdouble: float,
+        np.csingle: float,
+        np.cdouble: float,
+        np.float16: float,
+        np.float32: float,
+        np.float64: float,
+        np.complex64: float,
+        np.complex128: float,
+        np.bool_: bool,
+        np.ndarray: lambda x: x.tolist(),
+    }
+
+    def loop_dict(vartree, branch):
+        if not isinstance(vartree, dict):
+            return fst_vt
+        for var in vartree.keys():
+            branch_i = copy.copy(branch)
+            branch_i.append(var)
+            if isinstance(vartree[var], dict):
+                loop_dict(vartree[var], branch_i)
+            else:
+                current_value = get_dict(fst_vt, branch_i[:-1])[branch_i[-1]]
+                data_type = type(current_value)
+                if data_type in conversions:
+                    get_dict(fst_vt, branch_i[:-1])[branch_i[-1]] = conversions[data_type](current_value)
+                elif isinstance(current_value, (list, tuple)):
+                    for i, item in enumerate(current_value):
+                        current_value[i] = remove_numpy(item)
+
+    # set fast variables to update values
+    loop_dict(fst_vt, [])
+    return fst_vt
+
+
+
+def write_yaml(instance : dict, foutput : str) -> None:
+    """
+    Writes a dictionary to a YAML file using the ruamel.yaml library.
+
+    Args:
+        instance (dict): Dictionary to be written to the YAML file.
+        foutput (str): Path to the output YAML file.
+
+    Returns:
+        None
+    """
+    instance = remove_numpy(instance)
+
+    # Write yaml with updated values
+    # yaml = ry.YAML()
+    yaml.default_flow_style = None
+    yaml.width = float("inf")
+    # yaml.indent(mapping=4, sequence=6, offset=3)
+    yaml.allow_unicode = False
+    with open(foutput, "w", encoding="utf-8") as f:
+        yaml.dump(instance, f)
 
 def enforce_no_additional_properties(schema):
     """Recursively set additionalProperties: false for all objects in the schema"""

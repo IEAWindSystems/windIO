@@ -499,7 +499,6 @@ components:
             y_allow_pcent: 1.0
             z_allow_deg: 0.05
             sigma: 60000
-
             h_0: 0.05
             C_Cu: 4.786
             C_Fe: 0.556
