@@ -90,8 +90,16 @@ definitions:
       - coordinates
     properties:
       coordinates:
-        title: Wind turbine coordinate
+        title: Wind turbine coordinates
+        description: Coordinates of the wind turbine tower base
         $ref: "common.yaml#/definitions/coordinates"
+      identifiers:
+        title: (Optional) List of turbine identifiers
+        description: Identifiers for the wind turbines
+        type: array
+        items:
+          type: string
+        optional: true
 
   electrical_substation:
     title: Electrical substation
