@@ -9,8 +9,8 @@ class SampleInputs:
             "name": "IEA Wind Task 37 740-10-MW Reference Offshore Wind Plant (regular layout)",
             "layouts":
                 {
-                    "initial_layout":
-                        {
+                    #"initial_layout":
+                    #    {
                             "coordinates":
                                 {
                                     "x": [
@@ -56,7 +56,7 @@ class SampleInputs:
                                         5736170.119, 5735369.23
                                     ]
                                 }
-                        }
+                        #}
                 },
             "electrical_substations":
                 [

@@ -72,7 +72,7 @@ properties:
     $ref: "energy_resource.yaml#"
        
   #~
-  bathymetry:
+  Bathymetry:
     title: Bathymetry
     description: x, y, and depth field of water depth
     type: object

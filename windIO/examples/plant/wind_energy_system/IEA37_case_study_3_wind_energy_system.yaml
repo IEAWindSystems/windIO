@@ -2,8 +2,25 @@ name: IEA Wind Task 37 Case study 3, 25WT Wind Farm
 site: !include ../plant_energy_site/IEA37_case_study_3_energy_site.yaml
 wind_farm: !include ../plant_wind_farm/IEA37_case_study_3_wind_farm.yaml
 attributes:
-  net_AEP: 938.57362950
-  analyses:
-    wake_model:
-      name: Bastankhah’s Gaussian wake model (simplified version) 
-      
+  flow_model:
+    name: pyWake
+  analysis:
+    wind_deficit_model:
+      name: Bastankhah2014
+  model_outputs_specification:
+    cases_run:
+      all_occurences: False
+    turbine_outputs:
+      turbine_nc_filename: 'turbine_data.nc' # dimension = states, turbine
+      output_variables: ['power', 'rotor_effective_velocity'] #'frequency'
+    flow_field:
+      report: True
+      flow_nc_filename: flow_field.nc
+      output_variables: ['wind_speed', 'wind_direction']
+      z_planes:
+        z_sampling: "hub_heights"
+        xy_sampling: "grid"
+        x_bounds: [-1000, 5000]
+        y_bounds: [-1000, 1000]
+        dx: 150
+        dy: 150
