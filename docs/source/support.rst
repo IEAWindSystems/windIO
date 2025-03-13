@@ -2,6 +2,13 @@
 Tower
 =====================
 
+**NOTE windIO has moved!** The windIO source code repository and documentation have moved to the following locations:
+
+- Documentation is hosted at https://ieawindsystems.github.io/windio
+- Source code repository is now https://github.com/ieawindsystems/windio
+
+----
+
 The :code:`tower` is defined similar to the :code:`blade`.
 
 :code:`reference_axis` : Object
@@ -24,6 +31,13 @@ The field :code:`layers` mimic the same field of the blade.
 
 Foundation
 =======================
+
+**NOTE windIO has moved!** The windIO source code repository and documentation have moved to the following locations:
+
+- Documentation is hosted at https://ieawindsystems.github.io/windio
+- Source code repository is now https://github.com/ieawindsystems/windio
+
+----
 
 So far, :code:`foundation` is the simplest component with a single input describing the height of the foundation.
 

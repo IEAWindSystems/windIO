@@ -2,6 +2,13 @@
 Assembly
 *******************
 
+**NOTE windIO has moved!** The windIO source code repository and documentation have moved to the following locations:
+
+- Documentation is hosted at https://ieawindsystems.github.io/windio
+- Source code repository is now https://github.com/ieawindsystems/windio
+
+----
+
 The field :code:`assembly` includes five entries that aim at describing the overall configuration of the wind turbine:
 
 .. literalinclude:: ../../test/turbine_example.yaml

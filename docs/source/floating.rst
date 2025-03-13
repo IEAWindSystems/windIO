@@ -1,5 +1,13 @@
 Floating Platform
 ========================================
+
+**NOTE windIO has moved!** The windIO source code repository and documentation have moved to the following locations:
+
+- Documentation is hosted at https://ieawindsystems.github.io/windio
+- Source code repository is now https://github.com/ieawindsystems/windio
+
+----
+
 The floating platform ontology uses a *graph*-like representation of the geometry with Joints and Members.  Additional rigid body point masses can be defined at the joints as well.
 
 
@@ -296,6 +304,14 @@ There is an allowance for additional point masses at joints with user-customized
 
 Mooring
 ========================================
+
+**NOTE windIO has moved!** The windIO source code repository and documentation have moved to the following locations:
+
+- Documentation is hosted at https://ieawindsystems.github.io/windio
+- Source code repository is now https://github.com/ieawindsystems/windio
+
+----
+
 The mooring system ontology follows closely the input file format for MoorDyn or MAP++.  Additional information can be found in the `MoorDyn user guide <http://www.matt-hall.ca/files/MoorDyn-Users-Guide-2017-08-16.pdf>`_ .
 
 .. literalinclude:: ../../test/turbine_example.yaml

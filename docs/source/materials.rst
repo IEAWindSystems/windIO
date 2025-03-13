@@ -1,6 +1,13 @@
 Materials
 ------------
 
+**NOTE windIO has moved!** The windIO source code repository and documentation have moved to the following locations:
+
+- Documentation is hosted at https://ieawindsystems.github.io/windio
+- Source code repository is now https://github.com/ieawindsystems/windio
+
+----
+
 windIO defines a material database, which consists of a list of entries each marked by a dash. 
 
 .. literalinclude:: ../../test/turbine_example.yaml

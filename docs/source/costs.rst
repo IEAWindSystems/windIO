@@ -1,6 +1,13 @@
 Costs
 ------------
 
+**NOTE windIO has moved!** The windIO source code repository and documentation have moved to the following locations:
+
+- Documentation is hosted at https://ieawindsystems.github.io/windio
+- Source code repository is now https://github.com/ieawindsystems/windio
+
+----
+
 The field :code:`costs` includes the data to conduct an LCOE analysis of the wind turbine. The structure of the data is based on the analysis presented in the report https://www.nrel.gov/docs/fy20osti/74598.pdf
 
 .. literalinclude:: ../../test/turbine_example.yaml

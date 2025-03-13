@@ -1,6 +1,14 @@
 
 Hub
 ================
+
+**NOTE windIO has moved!** The windIO source code repository and documentation have moved to the following locations:
+
+- Documentation is hosted at https://ieawindsystems.github.io/windio
+- Source code repository is now https://github.com/ieawindsystems/windio
+
+----
+
 The field :code:`hub` describes the hub system from an aeroelastic perspective, distinguishing between aerodynamic and elastic properties, added in the fields :code:`outer_shape_bem` and :code:`elastic_properties_mb` respectively.
 
 .. literalinclude:: ../../test/turbine_example.yaml
@@ -28,6 +36,13 @@ The field :code:`hub` describes the hub system from an aeroelastic perspective, 
 
 Nacelle
 ====================
+
+**NOTE windIO has moved!** The windIO source code repository and documentation have moved to the following locations:
+
+- Documentation is hosted at https://ieawindsystems.github.io/windio
+- Source code repository is now https://github.com/ieawindsystems/windio
+
+----
 
 The field :code:`nacelle` describes the nacelle system from an aeroelastic perspective, distinguishing between aerodynamic and elastic properties, added in the fields :code:`outer_shape_bem` and :code:`elastic_properties_mb` respectively. An addition field :code:`drivetrain` is optional and defines some of the inputs used to size the drivetrain components.
 

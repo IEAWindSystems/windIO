@@ -1,6 +1,13 @@
 Airfoils
 ------------
 
+**NOTE windIO has moved!** The windIO source code repository and documentation have moved to the following locations:
+
+- Documentation is hosted at https://ieawindsystems.github.io/windio
+- Source code repository is now https://github.com/ieawindsystems/windio
+
+----
+
 windIO describes the airfoils in terms of coordinates and polars. The yaml entry airfoils consists of a list of elements. 
 
 .. literalinclude:: ../../test/turbine_example.yaml
