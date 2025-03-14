@@ -70,6 +70,10 @@ instance/
 
 # Sphinx documentation
 docs/_build/
+docs/source/plant_schema_doc.html
+docs/source/turbine_schema_doc.html
+docs/source/schema_doc.css
+docs/source/schema_doc.min.js
 
 # PyBuilder
 target/

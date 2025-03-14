@@ -42,6 +42,7 @@ jobs:
     - name: Build the book
       working-directory: ${{runner.workspace}}/windIO/docs/
       run: |
+        python schema_export.py
         sphinx-build -M html . ./_build/
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}

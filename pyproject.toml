@@ -35,7 +35,8 @@ dependencies = [
 [project.optional-dependencies]
 docs = [
     "sphinx",
-    "pydata-sphinx-theme"
+    "pydata-sphinx-theme",
+    'json-schema-for-humans',
 ]
 test = [
     'numpy',
