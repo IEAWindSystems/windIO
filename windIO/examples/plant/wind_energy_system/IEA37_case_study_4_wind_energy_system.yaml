@@ -2,8 +2,9 @@ name: IEA Wind Task 37 Case study 4, 81WT Wind Farm
 site: !include ../plant_energy_site/IEA37_case_study_4_energy_site.yaml
 wind_farm: !include ../plant_wind_farm/IEA37_case_study_4_wind_farm.yaml
 attributes:
-  net_AEP: 2861.18250569
-  analyses:
-    wake_model:
-      name: Bastankhah’s Gaussian wake model (simplified version) 
+  #net_AEP: 2861.18250569
+  analysis:
+    wind_deficit_model:
+      name: Bastankhah2014
+      #name: Bastankhah’s Gaussian wake model (simplified version) 
       

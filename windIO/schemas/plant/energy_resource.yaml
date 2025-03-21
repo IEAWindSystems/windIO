@@ -117,9 +117,30 @@ properties:
           title: Stability of the atmosphere
           description: Roughness length in meters
           $ref: "common.yaml#/definitions/multi_dimensional_data"
-        capping_inversion:
-          title: Capping Inversion
-          type: boolean
+        ABL_height:
+            title: atmoshpheric boundary layer height
+            $ref: "common.yaml#/definitions/multi_dimensional_data"
+        capping_inversion_thickness:
+            title: Capping inversion thickness in units of meters
+            $ref: "common.yaml#/definitions/multi_dimensional_data"
+        capping_inversion_strength:
+            title: capping inversion strength in units of Kelvin
+            $ref: "common.yaml#/definitions/multi_dimensional_data"
+        capping_inversion_height:
+            title: capping inversion height in units of meters
+            $ref: "common.yaml#/definitions/multi_dimensional_data"
+        lapse_rate:
+            title: lapse rate in units of K/m
+            $ref: "common.yaml#/definitions/multi_dimensional_data"
+        fc:
+            title: Coriolis Parameter
+            $ref: "common.yaml#/definitions/multi_dimensional_data"
+        tau_x:
+            title: Sheer stress x
+            $ref: "common.yaml#/definitions/multi_dimensional_data"
+        tau_y:
+            title: Sheer stress y
+            $ref: "common.yaml#/definitions/multi_dimensional_data"
 
 
 # DEFINITIONS
@@ -141,7 +162,6 @@ definitions:
       h_ref:
         title: Shear ref height
         type: number
-
 #     speedup:
 #       title: Speedup
 #       type: object
