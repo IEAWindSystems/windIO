@@ -68,7 +68,7 @@ class v1p0_to_v2p0:
 
         # Print out
         print("New yaml file being generated: %s"%self.filename_v2p0)
-        windIO.yaml.get_YAML().dump(dict_v2p0, self.filename_v2p0)
+        windIO.yaml.write_yaml(dict_v2p0, self.filename_v2p0)
         
         print("Converter windIO v1.0 to v2.0 ended.")
 
