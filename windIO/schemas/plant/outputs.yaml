@@ -21,7 +21,7 @@ properties:
     required:
       - time
       - x
-      - y      
+      - y
       - z
       - wind_speed
       - wind_direction
@@ -110,3 +110,11 @@ properties:
         title: Wind Speed in m/s
         description: Wind speed coordinates
         $ref: "common.yaml#/definitions/multi_dimensional_coordinate"
+      rotor_effective_velocity:
+        title: rotor effective velocity in m/s
+        description: Rotor effective velocity
+        $ref: "common.yaml#/definitions/multi_dimensional_data"
+      thrust:
+        title: Thrust force in N
+        description: Thrust force in N
+        $ref: "common.yaml#/definitions/multi_dimensional_data"

@@ -21,6 +21,9 @@ properties:
   wind_farm:
     $ref: "wind_farm.yaml"
   #~
+  output:
+    $ref: "outputs.yaml"
+  #~
   attributes:
     title: Attributes
     description: Specific attributes of the entire wind energy system
