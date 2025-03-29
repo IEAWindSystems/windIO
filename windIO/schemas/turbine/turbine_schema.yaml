@@ -473,7 +473,7 @@ properties:
                         maximum: 2.
                     elastic_properties:
                         $ref: "#/definitions/point_mass"
-                        description: Point mass modeling the full hub system, which includes the hub, the spinner, the blade bearings, the pitch actuators, the cabling, ....
+                        description: Point mass modeling the full hub system, which includes the hub, the spinner, the blade bearings, the pitch actuators, the cabling. The properties are defined in the hub-aligned coordinate system, which is centered at the rotor apex and has x aligned along the (possibly tilted) shaft, y parallel to the ground, and z pointing upwards (including the rotor tilt). The rotational inertia of the hub system is around x, so the first term of the inertia vector.
             drivetrain:
                 type: object
                 properties:
@@ -585,8 +585,46 @@ properties:
                                     minimum: 0
                                     maximum: 6
                             elastic_properties:
-                                $ref: "#/definitions/point_mass"
-                                description: Point mass modeling the gearbox
+                                type: object
+                                required:
+                                    - torsional_stiffness
+                                    - torsional_damping
+                                properties:
+                                    torsional_stiffness:
+                                        type: number
+                                        description: Equivalent torsional stiffness of the gearbox. This parameter is often required by aeroelastic solvers
+                                        units: N-m/rad
+                                        minimum: 0
+                                        default: 1.E+10
+                                    torsional_damping:
+                                        type: number
+                                        description: Equivalent torsional damping of the gearbox. This parameter is often required by aeroelastic solvers
+                                        units: (N-m/(rad/s)
+                                        minimum: 0
+                                        default: 1.E+7
+                                    mass:
+                                        type: number
+                                        description: Mass of the component modeled as a point
+                                        units: kg
+                                        minimum: 0
+                                    inertia:
+                                        type: array
+                                        description: Mass moment of inertia of the component modeled as a point. The inertia is defined at the center of mass.
+                                        items:
+                                            type: number
+                                            units: kg*m^2
+                                            minItems: 6
+                                            maxItems: 6
+                                            uniqueItems: false
+                                    location:
+                                        type: array
+                                        description: Location of the point mass with respect to the coordinate system
+                                        items:
+                                            type: number
+                                            units: m
+                                            minItems: 3
+                                            maxItems: 3
+                                            uniqueItems: false
                     lss:
                         type: object
                         description: Inputs describing the low speed shaft
@@ -1266,11 +1304,20 @@ properties:
                         #   minimum: 0.0
                         #   maximum: 100.0
                         #   description: Words
-                        
-
                         elastic_properties:
-                                $ref: "#/definitions/point_mass"
-                                description: Point mass modeling the generator
+                            $ref: "#/definitions/point_mass"
+                            description: Point mass modeling the generator. The properties are defined in the tower-top coordinate system, which is centered at the center of the tower top, and has x aligned along the prevailing wind direction, y parallel to the ground, and z pointing upwards.
+
+                    elastic_properties:
+                        $ref: "#/definitions/point_mass"
+                        description: Point mass modeling the overall drivetrain, excluding hub and yaw systems. The properties are defined in the tower-top coordinate system, which is centered at the center of the tower top, and has x aligned along the prevailing wind direction, y parallel to the ground, and z pointing upwards.
+            yaw:
+                type: object
+                description: Data describing the yaw system located at tower top.
+                properties:
+                    elastic_properties:
+                        $ref: "#/definitions/point_mass"
+                        description: Point mass modeling the yaw system. The properties are defined in the tower-top coordinate system, which is centered at the center of the tower top, and has x aligned along the prevailing wind direction, y parallel to the ground, and z pointing upwards.
             tower:
                 type: object
                 description: Data describing the wind turbine tower.
@@ -3920,16 +3967,17 @@ definitions:
             - location
             - mass
             - inertia
-            - coordinate_system
         properties:
             mass:
                 type: number
                 description: Mass of the component modeled as a point
                 units: kg
-                minimum: 0
+                minimum: 0.
+                default: 0.
             inertia:
                 type: array
-                description: Mass moment of inertia of the component modeled as a point
+                description: Mass moment of inertia of the component modeled as a point. The inertia is defined at the center of mass.
+                default: [0., 0., 0., 0., 0., 0.]
                 items:
                     type: number
                     units: kgm2
@@ -3939,15 +3987,13 @@ definitions:
             location:
                 type: array
                 description: Location of the point mass with respect to the coordinate system
+                default: [0., 0., 0.]
                 items:
                     type: number
                     units: m
                     minItems: 3
                     maxItems: 3
                     uniqueItems: false
-            coordinate_system:
-                type: string
-                description: Coordinate system used to define the location of the point mass
     filter:
         type: object
         description: Linear filter, could be a LPF, HPF, NF, INF, or user_defined
