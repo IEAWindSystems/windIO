@@ -105,11 +105,11 @@ properties:
       wind_direction:
         title: Wind Direction in degrees
         description: Wind direction coordinates
-        $ref: "common.yaml#/definitions/multi_dimensional_coordinate"
+        $ref: "common.yaml#/definitions/multi_dimensional_data"
       wind_speed:
         title: Wind Speed in m/s
         description: Wind speed coordinates
-        $ref: "common.yaml#/definitions/multi_dimensional_coordinate"
+        $ref: "common.yaml#/definitions/multi_dimensional_data"
       rotor_effective_velocity:
         title: rotor effective velocity in m/s
         description: Rotor effective velocity
