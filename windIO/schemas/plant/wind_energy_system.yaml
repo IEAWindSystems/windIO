@@ -84,11 +84,11 @@ properties:
               name:
                 title: Deflection model name
                 type: string
-                enum: ["None", "Jimenez", "Batankhah2016"]
+                enum: ["None", "Jimenez", "Bastankhah2016"]
               beta:
                 title: Jimenez deflection coefficient
                 type: number
-                # (Batankhah2016 only works with Batankhah2016 wind deficit)
+                # (Bastankhah2016 only works with Bastankhah2016 wind deficit)
 
           turbulence_model:
             title: Turbulence model
@@ -159,9 +159,9 @@ properties:
               parameters:
                 title: Blockage Model Parameters
                 type: array
-              #ss_alpha:
-              #  title: ss_alpha factor for SelfSimilarityDeficit2020
-              #  type: number
+                ss_alpha:
+                  title: ss_alpha factor for SelfSimilarityDeficit2020
+                  type: number
 
           HPC_config:
             title: Information to handle parallel runs on HPC clusters
