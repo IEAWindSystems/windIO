@@ -159,9 +159,9 @@ properties:
               parameters:
                 title: Blockage Model Parameters
                 type: array
-                ss_alpha:
-                  title: ss_alpha factor for SelfSimilarityDeficit2020
-                  type: number
+              ss_alpha:
+                title: ss_alpha factor for SelfSimilarityDeficit2020
+                type: number
 
           HPC_config:
             title: Information to handle parallel runs on HPC clusters
