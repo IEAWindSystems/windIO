@@ -23,6 +23,8 @@ properties:
   #~
   output:
     $ref: "outputs.yaml"
+  scada_data:
+    $rer: "sada_data.yaml"
   #~
   attributes:
     title: Attributes
