@@ -25,16 +25,17 @@ def test_wind_farm_input(subtests):
         windIO.validate(config, "plant/wind_farm")
 
 
-@pytest.mark.skip(reason="wind farm turbine has optional: true")
-def test_wind_farm_invalid_inputs_turbines(subtests):
+def test_wind_farm_inputs_turbines(subtests):
     """
     Test missing inputs for the wind_farm turbines property.
     """
     with subtests.test("missing turbines"):
         config = SampleInputs().wind_farm
+        windIO.validate(config, "plant/wind_farm")
+
+        # turbines are optional
         del config["turbines"]
-        with pytest.raises(ValidationError):
-            windIO.validate(config, "plant/wind_farm")
+        windIO.validate(config, "plant/wind_farm")
 
 
 def test_wind_farm_invalid_inputs_electrical_substations(subtests):
