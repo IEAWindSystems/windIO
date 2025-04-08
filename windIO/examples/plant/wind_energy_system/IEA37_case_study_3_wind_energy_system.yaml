@@ -8,8 +8,8 @@ attributes:
     wind_deficit_model:
       name: Bastankhah2014
   model_outputs_specification:
-    cases_run:
-      all_occurences: False
+    times_run:
+      all_occurences: True
     turbine_outputs:
       turbine_nc_filename: 'turbine_data.nc' # dimension = states, turbine
       output_variables: ['power', 'rotor_effective_velocity'] #'frequency'
