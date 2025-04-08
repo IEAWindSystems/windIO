@@ -136,7 +136,7 @@ properties:
               wake_averaging: # velocity and TI averaging
                 title: Averaging model for wake velocity and TI
                 type: string
-                enum: ["center", 'grid'] # Assume the grid is not used for tophat model because analytic solution is available
+                enum: ["center", 'grid'] 
               wind_speed_exponent_for_power:
                 type: number
               wind_speed_exponent_for_ct:
