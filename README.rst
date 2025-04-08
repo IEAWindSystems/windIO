@@ -10,7 +10,7 @@ system models, and we encourage collaboration.
 The github repository is at https://github.com/IEAWindSystems/windIO and the
 online documentation is at https://ieawindsystems.github.io/windIO.
 
-This windIO repository including the following:
+The windIO repository includes the following:
 
 - Schema defining windIO components describing wind turbines and wind plants
 - Python library for validating files relative to the schema and loading the data into a Python dictionary
@@ -27,8 +27,6 @@ are available at the following links:
 
 If you use this model in your research or publications, please cite this [IEA technical report](https://doi.org/10.2172/1868328):
 
-.. code-block:: bibtex
-   
    @article{osti_1868328,
       title = {System Modeling Frameworks for Wind Turbines and Plants: Review and Requirements Specifications},
       author = {Bortolotti, Pietro and Bay, Christopher and Barter, Garrett and Gaertner, Evan and Dykes, Katherine and McWilliam, Michael and Friis-Moller, Mikkel and Molgaard Pedersen, Mads and Zahle, Frederik},
@@ -73,19 +71,3 @@ The suggested method of incorporating windIO into your code is:
    windIO.load_yaml("path/to/input.yaml")
 
    # Conversion to your software's data structures here
-
-Software library reference
---------------------------
-
-.. automodule:: windIO
-   :members: validate, load_yaml, write_yaml
-
-
-Contents
---------
-.. toctree::
-   :maxdepth: 3
-
-   source/turbine_schema
-   source/plant_schema
-   source/developer_guide

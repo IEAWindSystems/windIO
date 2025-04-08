@@ -10,7 +10,7 @@ from ruamel.yaml.constructor import SafeConstructor
 import xarray as xr
 
 
-def fmt(v: Any) -> dict | list | str | float | int:
+def _fmt(v: Any) -> dict | list | str | float | int:
     """
     Formats a dictionary appropriately for yaml.load by converting Tuples to Lists.
 
@@ -19,14 +19,14 @@ def fmt(v: Any) -> dict | list | str | float | int:
             values within the dictionary.
     """
     if isinstance(v, dict):
-        return {k: fmt(v) for k, v in v.items() if fmt(v) != {}}
+        return {k: _fmt(v) for k, v in v.items() if _fmt(v) != {}}
     elif isinstance(v, tuple):
         return list(v)
     else:
         return v
 
 
-def ds2yml(ds: xr.Dataset) -> dict:
+def _ds2yml(ds: xr.Dataset) -> dict:
     """
     Converts the input xr.Dataset to a format compatible with yaml.load.
 
@@ -34,7 +34,7 @@ def ds2yml(ds: xr.Dataset) -> dict:
         ds (xr.Dataset): NetCDF data loaded as a xr.Dataset
     """
     d = ds.to_dict()
-    return fmt(
+    return _fmt(
         {
             **{k: v["data"] for k, v in d["coords"].items()},
             **d["data_vars"],
@@ -42,7 +42,7 @@ def ds2yml(ds: xr.Dataset) -> dict:
     )
 
 
-def get_YAML(
+def _get_YAML(
     typ: str = "safe",
     write_numpy: bool = True,
     read_numpy: bool = False,
@@ -67,6 +67,8 @@ def get_YAML(
     yaml_obj.default_flow_style = False
     yaml_obj.width = 1e6
     yaml_obj.allow_unicode = False
+    yaml_obj.indent(mapping=4, sequence=6, offset=3)
+    yaml_obj.sort_base_mapping_type_on_output = False
 
     # Write nested list of numbers with flow-style
     def list_rep(dumper, data):
@@ -126,10 +128,10 @@ def get_YAML(
             ext = os.path.splitext(filename)[1].lower()
             if ext in [".yaml", ".yml"]:
                 return load_yaml(
-                    filename, get_YAML()
+                    filename, _get_YAML()
                 )  # TODO: Make `get_YAML()` dynamic to make it possible to update
             elif ext in [".nc"]:
-                return ds2yml(xr.open_dataset(filename))
+                return _ds2yml(xr.open_dataset(filename))
             else:
                 raise ValueError(f"Unsupported file extension: {ext}")
 
@@ -140,16 +142,32 @@ def get_YAML(
 
 def load_yaml(filename: str, loader=None) -> dict:
     """
-    Opens ``filename`` and loads the content into a dictionary with the ``get_YAML``
+    Opens ``filename`` and loads the content into a dictionary with the ``_get_YAML``
     function from ruamel.yaml.YAML.
 
     Args:
         filename (str): Path or file-handle to the local file to be loaded.
-        loader (ruamel.yaml.YAML, optional): Defaults to ``get_YAML()``.
+        loader (ruamel.yaml.YAML, optional): Defaults to SafeLoader.
 
     Returns:
         dict: Dictionary representation of the YAML file given in ``filename``.
     """
     if loader is None:
-        loader = get_YAML()
+        loader = _get_YAML()
     return loader.load(filename)
+
+def write_yaml(instance : dict, foutput : str) -> None:
+    """
+    Writes a dictionary to a YAML file using the ruamel.yaml library.
+
+    Args:
+        instance (dict): Dictionary to be written to the YAML file.
+        foutput (str): Path to the output YAML file.
+
+    Returns:
+        None
+    """
+    # Write yaml with updated values
+    yaml = _get_YAML()
+    with open(foutput, "w", encoding="utf-8") as f:
+        yaml.dump(instance, f)

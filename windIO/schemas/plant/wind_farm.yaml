@@ -123,14 +123,17 @@ definitions:
     required:
       - coordinates
     properties:
-      x:
+      coordinates:
+        title: Wind turbine coordinates
+        description: Coordinates of the wind turbine tower base
+        $ref: "common.yaml#/definitions/coordinates"
+      identifiers:
+        title: (Optional) List of turbine identifiers
+        description: Identifiers for the wind turbines
         type: array
         items:
-          type: number
-      y:
-        type: array
-        items:
-          type: number
+          type: string
+        optional: true
 
   electrical_substation:
     title: Electrical substation

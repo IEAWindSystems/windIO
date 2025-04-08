@@ -17,11 +17,11 @@ class v1p0_to_v2p0:
         # Read the input yaml
         dict_v1p0 = windIO.load_yaml(self.filename_v1p0)
         
-        # Copy the input windio dict
-        dict_v2p0 = deepcopy(dict_v1p0)
+        # Set windIO version
+        dict_v2p0 = {"windIO_version": "2.0"}
 
-        # Add windIO version
-        dict_v2p0["windIO_version"] = "2.0"
+        # Copy the input windio dict
+        dict_v2p0.update(deepcopy(dict_v1p0))
 
         try:
             dict_v2p0 = self.convert_blade(dict_v2p0)
@@ -68,7 +68,7 @@ class v1p0_to_v2p0:
 
         # Print out
         print("New yaml file being generated: %s"%self.filename_v2p0)
-        windIO.yaml.get_YAML().dump(dict_v2p0, self.filename_v2p0)
+        windIO.yaml.write_yaml(dict_v2p0, self.filename_v2p0)
         
         print("Converter windIO v1.0 to v2.0 ended.")
 

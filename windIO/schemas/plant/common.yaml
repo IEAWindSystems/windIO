@@ -17,6 +17,17 @@ definitions:
         description: South-North coordinate
         type: number
         units: m
+      z:
+        title: (Optional) Z coordinate
+        description: Height coordinate
+        type: number
+        units: m
+        optional: true
+      crs:
+        title: (Optional) Coordinate reference system
+        description: Coordinate reference system described as a PROJ string
+        type: string
+        optional: true
   #~
   coordinates:
     title: Coordinates

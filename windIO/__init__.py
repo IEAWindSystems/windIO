@@ -14,13 +14,11 @@ import windIO.examples.plant
 import windIO.examples.turbine
 import windIO.schemas
 
-plant_ex = windIO.examples.plant
-turbine_ex = windIO.examples.turbine
-schemas = windIO.schemas
-load_yaml = windIO.yaml.load_yaml
+from .examples import plant as plant_ex, turbine as turbine_ex
+from windIO.yaml import load_yaml, write_yaml
 ### API design
 
-def enforce_no_additional_properties(schema):
+def _enforce_no_additional_properties(schema):
     """Recursively set additionalProperties: false for all objects in the schema"""
     if isinstance(schema, dict):
 
@@ -34,14 +32,14 @@ def enforce_no_additional_properties(schema):
             if key == 'properties':
                 # Process each property's schema
                 for prop_schema in value.values():
-                    enforce_no_additional_properties(prop_schema)
+                    _enforce_no_additional_properties(prop_schema)
             elif key in ['items', 'additionalItems']:
                 # Process array item schemas
-                enforce_no_additional_properties(value)
+                _enforce_no_additional_properties(value)
             elif key in ['oneOf', 'anyOf', 'allOf']:
                 # Process each subschema in these combining keywords
                 for subschema in value:
-                    enforce_no_additional_properties(subschema)
+                    _enforce_no_additional_properties(subschema)
     return schema
 
 def _add_local_schemas_to(resolver, schema_folder, base_uri, schema_ext_lst=['.json', '.yaml', '.yml']):
@@ -109,7 +107,7 @@ def validate(input: dict | str | Path, schema_type: str, restrictive: bool = Tru
 
     schema = load_yaml(schema_file)
     if restrictive:
-        schema = enforce_no_additional_properties(schema)
+        schema = _enforce_no_additional_properties(schema)
 
     base_uri = 'https://www.example.com/schemas/'
     resolver = jsonschema.RefResolver(base_uri=base_uri, referrer=schema)
