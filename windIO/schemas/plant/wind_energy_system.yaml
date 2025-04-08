@@ -35,7 +35,6 @@ properties:
           name:
             title: Flow model name
             type: string
-            enum: ["foxes", "pyWake", "pyWakeEllipSys", "code_saturne", "wayve", "floris"]
       analysis:
         properties:
           wind_deficit_model:
@@ -291,7 +290,6 @@ properties:
               wake_tool:
                   title: choice of wake tool for coupling to atmospheric flow model
                   type: string
-                  enum: ['pywake', 'foxes', 'wayve', 'floris']
 
               subgrid:
                 title: settings for the subgrid on which wake model velocities are defined
