@@ -134,7 +134,7 @@ properties:
                 type: string
                 enum: ["center", "grid"]
               wake_averaging: # velocity and TI averaging
-                title: Averaging model for wake velocity and TI
+                title: Averaging model for wake velocity and TI deficit
                 type: string
                 enum: ["center", 'grid'] 
               wind_speed_exponent_for_power:
