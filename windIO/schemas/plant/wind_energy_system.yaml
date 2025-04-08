@@ -78,7 +78,6 @@ properties:
           deflection_model:
             title: Deflection model
             description: defines the deviation of the path of the wake centerline in the crossflow direction (only for wake steering)
-            #description: Deflection model used in AEP calculations
             type: object
             properties:
               name:
