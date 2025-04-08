@@ -270,13 +270,8 @@ properties:
                 title: APM grid filter length
                 type: number # (default 1.e3)
 
-          wake_tool:
-            title: choice of wake tool for coupling to wayve
-            type: string
-            enum: ['pywake', 'foxes', 'wayve']
-
           wm_coupling:
-            title: settings for wake model coupling in wayve
+            title: settings for wake model coupling in high-fidelity atmospheric models
             type: object
             properties:
               method:
@@ -285,7 +280,7 @@ properties:
                 type: string
                 enum: ["VM", "PB", "US"]  # (default "PB")
               settings:
-                title: method-specific settings for wake model coupling in wayve
+                title: method-specific settings for wake model coupling in atmospheric model
                 type: object
                 properties:
                   alpha:
@@ -296,6 +291,11 @@ properties:
                     title: Upstream distance
                     description: Upstream distance where the background velocity is evaluated. Has to be specified when using "US", no effect otherwise.
                     type: number # (default 1.e3)
+              wake_tool:
+                  title: choice of wake tool for coupling to atmospheric flow model
+                  type: string
+                  enum: ['pywake', 'foxes', 'wayve', 'floris']
+
               subgrid:
                 title: settings for the subgrid on which wake model velocities are defined
                 type: object
