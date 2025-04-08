@@ -1,4 +1,4 @@
-name: IEA Wind Task 37 Case study 3, 25WT Wind Farm
+name: wind farm to test uniform weibull resource, based on IEA Wind Task 37 Case study 3, 25WT Wind Farm
 boundaries: 
     polygons: [
         x: [10363.8, 9449.7, 9387.0, 9365.1, 9360.8, 9361.5, 9361.3, 7997.6, 6098.3, 8450.3, 8505.4, 9133.0, 9332.8, 9544.2, 9739.0, 9894.9, 10071.8, 10106.9],
