@@ -316,24 +316,60 @@ properties:
         type: object
         additionalProperties: false
         required:
-          - cases_run
+          - run_configuration
         properties:
           output_folder:
             title: output folder name
             description: name of the folder where the output files are written
             type: string
-
-          cases_run:
-            title: Handling of the timeseries runs
-            type: object
-            additionalProperties: false
-            properties:
-              all_occurences:
-                title: active to run all the occurences from the time series
-                type: boolean
-              subset:
-                title: list of times to run
-                type: array
+                  
+          run_configuration:
+            title: Handling of simulation runs
+            oneOf:
+              - required: ["times_run"]
+                properties:
+                  times_run:
+                    title: Time-based run configuration
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      all_occurences:
+                        title: active to run all the occurences from the time series
+                        type: boolean
+                      subset:
+                        title: list of times to run
+                        type: array
+                        items:
+                          type: string
+                          format: date-time
+              - required: ["wind_speeds_run", "directions_run"]
+                properties:
+                  wind_speeds_run:
+                    title: Wind speeds configuration
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      all_values:
+                        title: run all available wind speeds
+                        type: boolean
+                      specific_values:
+                        title: specific wind speeds to run
+                        type: array
+                        items:
+                          type: number
+                  directions_run:
+                    title: Wind directions configuration
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      all_values:
+                        title: run all available wind directions
+                        type: boolean
+                      specific_values:
+                        title: specific wind directions to run
+                        type: array
+                        items:
+                          type: number
 
           turbine_outputs:
             title: outputs related to each turbine
@@ -354,7 +390,7 @@ properties:
 
           flow_field:
             title: configuration of the flow field outputs
-            description:  flow field output variables and files
+            description: flow field output variables and files
             type: object
             additionalProperties: false
             properties:
@@ -372,7 +408,6 @@ properties:
                 type: array
                 items:
                   type: string
-
               z_planes:
                 title: planes at which the flow field variables will be stored
                 description: description of vertical planes
