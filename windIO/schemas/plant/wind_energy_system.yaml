@@ -8,7 +8,6 @@ required:
 
 
 # PROPERTIES
-additionalProperties: false 
 properties:
   #~
   name:
@@ -26,14 +25,12 @@ properties:
     title: Attributes
     description: Specific attributes of the entire wind energy system
     type: object
-    additionalProperties: false
     properties:
       #~~
       flow_model:
         title: Flow model
         description: Flow model used in wind farm design
         type: object
-        additionalProperties: false
         properties:
           name:
             title: Flow model name
@@ -314,7 +311,6 @@ properties:
         title: Outputs
         description: Output parameters and configurations for the wind energy system
         type: object
-        additionalProperties: false
         required:
           - run_configuration
         properties:
@@ -331,7 +327,6 @@ properties:
                   times_run:
                     title: Time-based run configuration
                     type: object
-                    additionalProperties: false
                     properties:
                       all_occurences:
                         title: active to run all the occurences from the time series
@@ -347,7 +342,6 @@ properties:
                   wind_speeds_run:
                     title: Wind speeds configuration
                     type: object
-                    additionalProperties: false
                     properties:
                       all_values:
                         title: run all available wind speeds
@@ -360,7 +354,6 @@ properties:
                   directions_run:
                     title: Wind directions configuration
                     type: object
-                    additionalProperties: false
                     properties:
                       all_values:
                         title: run all available wind directions
@@ -375,7 +368,6 @@ properties:
             title: outputs related to each turbine
             description: outputs for each turbine as the individual turbine power, velocity..
             type: object
-            additionalProperties: false
             properties:
               turbine_nc_filename:
                 title: Name of the file that will contain the turbine outputs
@@ -392,7 +384,6 @@ properties:
             title: configuration of the flow field outputs
             description: flow field output variables and files
             type: object
-            additionalProperties: false
             properties:
               report:
                 title: Report
@@ -412,7 +403,6 @@ properties:
                 title: planes at which the flow field variables will be stored
                 description: description of vertical planes
                 type: object
-                additionalProperties: false
                 properties:
                   z_sampling:
                     title: type of vertical discretization
