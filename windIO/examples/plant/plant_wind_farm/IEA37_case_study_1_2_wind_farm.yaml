@@ -1,7 +1,6 @@
 name: IEA Wind Task 37 Case study 1+2, 16WT Wind Farm
 layouts: 
-    initial_layout: 
-        coordinates:
+     -  coordinates:
             x: [
                 0., 650., 200.861, -525.861, -525.861, 200.861, 1300., 1051.7221,
                 401.7221, -401.7221, -1051.7221, -1300., -1051.7221, -401.7221,

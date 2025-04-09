@@ -1,10 +1,8 @@
-input_format_version: 0
 title: Definition of the wind energy conversion system
-description: A file used to define the built environment (and other non-tangible components like O&M)
+description: A file used to define either a single wind farm or multiple wind farms with turbine type mappings and additional built environment components
 required:
   - name
   - layouts
-  - turbines
 optional:
   - electrical_substations
   - electrical_collection_array
@@ -14,20 +12,49 @@ optional:
 # PROPERTIES
 properties:
   name:
-    description: Name of the wind farm
+    description: Name of the wind farm or wind farm system
     type: string
+
   layouts:
-    description: Position of wind turbines
-    type: object
-    required:
-      - initial_layout
-    properties:
-      initial_layout:
-        $ref: "#/definitions/initial_layout"
+    description: Position of wind turbines. Supports single or multiple layouts.
+    oneOf: # Allow either single layout as an object or multiple layouts as an array
+      - type: object
+        required:
+          - coordinates
+        properties:
+          coordinates:
+            description: List of turbine coordinates for this layout
+            $ref: "common.yaml#/definitions/coordinates"
+      - type: array
+        items:
+          type: object
+          required:
+            - coordinates
+          properties:
+            coordinates:
+              description: List of turbine coordinates for this layout
+              $ref: "common.yaml#/definitions/coordinates"
+            turbine_types:
+              description: (Optional) List of turbine types corresponding to turbine positions.
+              type: array
+              items:
+                type: integer
+
+  turbine:
+    description: (Optional) A single turbine model used for the entire wind farm
+    $ref: "turbine.yaml#"
 
   turbines:
-    description: Turbine models installed in the WES
-    $ref: "turbine.yaml#"
+    description: (Optional) The full turbine definition for the entire wind farm
+    type: object
+    additionalProperties: true
+
+  turbine_types:
+    description: (Optional) List of turbine types used for layouts. Required if turbine_types is used in layouts.
+    type: object
+    additionalProperties:
+      $ref: "turbine.yaml#"
+
   electrical_substations:
     description: Information about electrical substations
     type: array
@@ -63,43 +90,39 @@ properties:
         properties:
           cable_type:
             title: Cable type
-            description: List of aviable cable types
+            description: List of available cable types
             type: array
-            units: mm2
+            units: mm^2
           cross_section:
             title: Cross section
-            description: List of cables cross section
+            description: List of cable cross sections
             type: array
-            units: mm2
+            units: mm^2
           capacity:
             title: Cable capacity
-            description: List of cable capacity
+            description: List of cable capacities
             type: array
-            units: WindTurbine / Cable
           cost:
             title: Cable cost
-            description: List of cables cost
+            description: List of cable costs
             type: array
-            units: euro/meter
+            units: USD/m
 
 definitions:
-  initial_layout:
-    title: Wind turbine layout
+  coordinates:
+    title: Wind turbine or substation coordinates
     type: object
     required:
       - coordinates
     properties:
-      coordinates:
-        title: Wind turbine coordinates
-        description: Coordinates of the wind turbine tower base
-        $ref: "common.yaml#/definitions/coordinates"
-      identifiers:
-        title: (Optional) List of turbine identifiers
-        description: Identifiers for the wind turbines
+      x:
         type: array
         items:
-          type: string
-        optional: true
+          type: number
+      y:
+        type: array
+        items:
+          type: number
 
   electrical_substation:
     title: Electrical substation
