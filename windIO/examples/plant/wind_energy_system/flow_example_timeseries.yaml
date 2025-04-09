@@ -2,7 +2,7 @@ name: IEA Wind Task 37 Case study 3, 25WT Wind Farm
 site: !include ../plant_energy_site/flow_case_timeseries_site.yaml
 wind_farm: !include ../plant_wind_farm/IEA37_case_study_3_wind_farm.yaml
 attributes:
-  analyses:
+  analysis:
     flow_model:
       name: foxes
     wake_model:
