@@ -2,9 +2,6 @@ name: IEA Wind Task 37 Case study 1+2, 16WT Wind Energy System
 site: !include ../plant_energy_site/IEA37_case_study_1_2_energy_site.yaml
 wind_farm: !include ../plant_wind_farm/IEA37_case_study_1_2_wind_farm.yaml
 attributes:
-  #gross_AEP: 469.536
-  #net_AEP: 366.94157116
   analysis:
     wind_deficit_model:
       name: Bastankhah2014
-      #name: Bastankhah’s Gaussian wake model (simplified version) 
