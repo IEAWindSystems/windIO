@@ -22,7 +22,6 @@ properties:
       - type: object
         required:
           - coordinates
-        additionalProperties: false
         properties:
           coordinates:
             description: List of turbine coordinates for this layout
@@ -32,7 +31,6 @@ properties:
           type: object
           required:
             - coordinates
-          additionalProperties: false
           properties:
             coordinates:
               description: List of turbine coordinates for this layout
@@ -52,7 +50,6 @@ properties:
   turbines:
     description: (Optional) The full turbine definition for the entire wind farm
     type: object
-    additionalProperties: true
     optional: true
 
   turbine_types:
