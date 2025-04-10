@@ -2,35 +2,38 @@ name: IEA Wind Task 37 Case study 3, 25WT Wind Farm
 site: !include ../plant_energy_site/flow_case_timeseries_site.yaml
 wind_farm: !include ../plant_wind_farm/IEA37_case_study_3_wind_farm.yaml
 attributes:
+  flow_model:
+    name: foxes
   analysis:
-    flow_model:
-      name: foxes
-    wake_model:
-      name: Bastankhah
-      k: 0.1
+    wind_deficit_model:
+      name: Bastankhah2014
+      wake_expansion_coefficient:
+         k_b: 0.1
       ceps: 0.23
     deflection_model:
       name: Jimenez
     turbulence_model:
       name: STF2005
     superposition_model:
-      name: Squared
+      ws_superposition: Linear
+      ti_superposition: Linear
     rotor_averaging:
-      name: avg_deficit
-    blockage:
+      n_x_grid_points: 5
+      n_y_grid_points: 5
+      background_averaging: center
+      wake_averaging: grid
+    blockage_model:
       name: SelfSimilarityDeficit2020
-    outputs:
-      AEP: True
-      AEP_per_turbine: True
-      name: timeseries-test-case
-      power_percentiles:
-          report: True
-          percentiles: [5, 10, 50, 90, 95]
-      flow_field:
-          time: [0]
-          output_variables:  
-            - velocity_u
-      power_table:
-          - 'power_per_turbine' 
+  model_outputs_specification:
+    run_configuration:
+      times_run:
+        all_occurences: false
+        subset: [0, 1]
+    flow_field:
+      output_variables:  
+        - velocity_u
+    turbine_outputs:
+      output_variables:  
+        - power_per_turbine
 
 

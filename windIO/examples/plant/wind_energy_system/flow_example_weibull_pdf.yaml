@@ -2,24 +2,21 @@ name: IEA Wind Task 37 Case study 3, 25WT Wind Farm
 site: !include ../plant_energy_site/flow_case_weibull_pdf_site.yaml
 wind_farm: !include ../plant_wind_farm/IEA37_case_study_3_wind_farm.yaml
 attributes:
+  flow_model:
+    name: foxes
   analysis:
-    flow_model:
-      name: foxes
-    wake_model:
-      name: Bastankhah’s Gaussian wake model (simplified version)
-    outputs:
-      AEP: True
-      AEP_per_turbine: True
-      power_percentiles:
-          report: True
-          percentiles: [5, 10, 50, 90, 95]
-      flow_field:
-          directions: [0]
-          speeds: [8] 
-          output_variables:  
-            - velocity_u
-            - turbulence_intensity
-      power_table:
-          - 'power_per_turbine' 
-
-
+    wind_deficit_model:
+      name: Bastankhah2014
+  model_outputs_specification:
+    run_configuration:
+      wind_speeds_run:
+        specific_values: [8.11]
+      directions_run:
+        specific_values: [0]
+    flow_field:
+      output_variables:
+        - velocity_u
+        - turbulence_intensity
+    turbine_outputs:
+      output_variables:
+        - power_per_turbine

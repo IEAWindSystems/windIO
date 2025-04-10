@@ -6,7 +6,7 @@ attributes:
     name: foxes
   analysis:
     wind_deficit_model:
-      name: batankhah2014
+      name: Bastankhah2014
   model_outputs_specification:
     run_configuration:
       wind_speeds_run:
