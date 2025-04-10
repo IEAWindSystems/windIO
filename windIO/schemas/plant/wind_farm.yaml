@@ -49,7 +49,7 @@ properties:
 
   turbines:
     description: (Optional) The full turbine definition for the entire wind farm
-    type: object
+    $ref: "turbine.yaml#"
     optional: true
 
   turbine_types:
