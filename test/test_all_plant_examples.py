@@ -37,6 +37,7 @@ def test_validate_all_example_files():
         parent_dir = file_path.parent.name
         if parent_dir in schema_mapping:
             schema_type = schema_mapping[parent_dir]
+            print(f"Validating {file_name} against {schema_type}")
             
             # Use pytest subtests to continue even if one file fails
             try:
@@ -44,3 +45,5 @@ def test_validate_all_example_files():
             except Exception as e:
                 pytest.fail(f"Validation failed for {file_path}: {str(e)}")
 
+if __name__ == '__main__':
+    test_validate_all_example_files()
