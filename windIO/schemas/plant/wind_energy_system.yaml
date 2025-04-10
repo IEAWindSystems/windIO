@@ -333,8 +333,10 @@ properties:
                         title: list of times to run
                         type: array
                         items:
-                          type: string
-                          format: date-time
+                          oneOf:
+                           - type: string
+                             format: date-time
+                           - type: integer
               - required: ["wind_speeds_run", "directions_run"]
                 properties:
                   wind_speeds_run:
