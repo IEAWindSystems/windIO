@@ -42,11 +42,6 @@ properties:
                 type: integer
               optional: true
 
-  turbine:
-    description: (Optional) A single turbine model used for the entire wind farm
-    $ref: "turbine.yaml#"
-    optional: true
-
   turbines:
     description: (Optional) The full turbine definition for the entire wind farm
     $ref: "turbine.yaml#"
