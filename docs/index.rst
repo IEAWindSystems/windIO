@@ -1,6 +1,6 @@
 
-windIO: a community-focused data I/O format
-===========================================
+windIO: a community-focused data I/O format for wind energy systems
+===================================================================
 
 windIO is a data format for inputs and outputs to wind energy system computational models.
 Historically, it has focused on systems engineering models, but it has been adopted in other
@@ -25,10 +25,12 @@ are available at the following links:
 - `IEA 22-MW offshore <https://github.com/IEAWindSystems/IEA-22-280-RWT>`_
 - `IEA Wind 740-10-MW Reference Offshore Wind Plants <https://github.com/IEAWindSystems/IEA-Wind-740-10-ROWP/blob/main/README.md>`_
 
-If you use this model in your research or publications, please cite this [IEA technical report](https://doi.org/10.2172/1868328):
+If you use this model in your research or publications, please cite the DOI from Zenodo:
 
-.. code-block:: bibtex
-   
+DOI: `10.5281/zenodo.15191297 <https://doi.org/10.5281/zenodo.15191297>`_
+
+Alternatively, you can cite this older `IEA technical report <https://doi.org/10.2172/1868328>`_:
+
    @article{osti_1868328,
       title = {System Modeling Frameworks for Wind Turbines and Plants: Review and Requirements Specifications},
       author = {Bortolotti, Pietro and Bay, Christopher and Barter, Garrett and Gaertner, Evan and Dykes, Katherine and McWilliam, Michael and Friis-Moller, Mikkel and Molgaard Pedersen, Mads and Zahle, Frederik},
@@ -38,7 +40,7 @@ If you use this model in your research or publications, please cite this [IEA te
       month = {5}
    }
 
-Author: `IEA Wind Task 37 Team <mailto:pietro.bortolotti@nrel.gov>`_
+Author: `IEA Wind Task 37 and 55 Teams <mailto:pietro.bortolotti@nrel.gov>`_
 
 Installation
 ------------

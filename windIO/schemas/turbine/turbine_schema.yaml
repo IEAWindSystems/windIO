@@ -14,16 +14,17 @@ required:
     - name
     - windIO_version
     - components
-    - materials
     - assembly
 optional:
     - comments
-    - environment
     - airfoils
+    - materials
     - control
+    - environment
     - bos
     - costs
-# additionalProperties: true
+    - outputs
+additionalProperties: False
 properties:
     comments:
         description: Text field to describe the wind turbine, the changes to previous versions, etc,
@@ -121,6 +122,7 @@ properties:
                     - outer_shape
                 optional:
                     - structure
+                    - elastic_properties
                 properties:
                     reference_axis:
                         type: object
@@ -2948,6 +2950,19 @@ properties:
                         units: rpm
                         minimum: 0
                         default: 100.
+            yaw:
+                type: object
+                description: Yaw system data.
+                required:
+                    - yaw_rate
+                properties:
+                    yaw_rate:
+                        type: number
+                        description: Maximum yaw rate of the wind turbine.
+                        units: deg/s
+                        minimum: 0
+                        maximum: 30.
+                        default: 1.
     environment:
         type: object
         description: The field :code:`environment` includes the data characterizing air and water where the wind turbine operates.
