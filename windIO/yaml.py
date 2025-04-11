@@ -154,7 +154,7 @@ def load_yaml(filename: str, loader=None) -> dict:
     """
     if loader is None:
         loader = _get_YAML()
-    return loader.load(filename)
+    return loader.load(Path(filename))
 
 def write_yaml(instance : dict, foutput : str) -> None:
     """
