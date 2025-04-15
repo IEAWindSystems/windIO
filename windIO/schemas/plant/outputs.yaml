@@ -33,16 +33,22 @@ properties:
       x:
         title: X coordinate
         description: West-East coordinate
-        #$ref: "common.yaml#/definitions/coordinates"
-        $ref: "common.yaml#/definitions/multi_dimensional_coordinate"
+        oneOf:
+          - $ref: "common.yaml#/definitions/multi_dimensional_data"
+          - $ref: "common.yaml#/definitions/multi_dimensional_coordinate"
       y:
         title: Y coordinate
         description: South-North coordinate
-        #$ref: "common.yaml#/definitions/coordinates"
-        $ref: "common.yaml#/definitions/multi_dimensional_coordinate"
+        oneOf:
+          - $ref: "common.yaml#/definitions/multi_dimensional_data"
+          - $ref: "common.yaml#/definitions/multi_dimensional_coordinate"
       z:
         title: Z coordinate
         description: Vertical coordinate
+        $ref: "common.yaml#/definitions/multi_dimensional_coordinate"
+      points:
+        title: Points in the field
+        description: Dimension of the number of points in a field
         $ref: "common.yaml#/definitions/multi_dimensional_coordinate"
       wind_speed:
         title: wind speed
@@ -71,6 +77,10 @@ properties:
       potential_temperature:
         title: Potential temperature
         description: Potential temperature field
+        $ref: "common.yaml#/definitions/multi_dimensional_data"
+      k:
+        title: Turbulent Kinetic Energy
+        description: Turbulent Kinetic Energy (TKE) field
         $ref: "common.yaml#/definitions/multi_dimensional_data"
 
   #~
