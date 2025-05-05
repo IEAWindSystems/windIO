@@ -69,6 +69,9 @@ properties:
             oneOf:
               - $ref: "common.yaml#/definitions/multi_dimensional_data"
               - $ref: "common.yaml#/definitions/multi_dimensional_coordinate" 
+        operating:
+            description: Flag describing which turbines are operating
+            $ref: "common.yaml#/definitions/multi_dimensional_data"
         probability:
             description: Probability of flow cases [0,1]
             $ref: "common.yaml#/definitions/multi_dimensional_data"
