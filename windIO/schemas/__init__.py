@@ -1,9 +1,12 @@
 import jsonschema
+from pathlib import Path
 try:
     import pint
     has_pint = True
 except ImportError:
     has_pint = False
+
+schemaPath = Path(__file__).parent
 
 # Extension of the draft 7 schema
 windIOMetaSchema = jsonschema.validators.extend(jsonschema.Draft7Validator)

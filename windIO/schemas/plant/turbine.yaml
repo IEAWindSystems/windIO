@@ -1,4 +1,5 @@
-input_format_version: 0
+$schema: "http://json-schema.org/draft-07/schema#"
+$id: "windIO/plant/turbine"
 title: Turbine Definition
 type: object
 description: >-

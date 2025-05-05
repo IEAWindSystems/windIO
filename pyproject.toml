@@ -61,3 +61,8 @@ windIO = [
 [project.urls]
 Homepage = "https://github.com/IEAWindSystems/windIO"
 Documentation = "https://ieawindsystems.github.io/windio"
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "error"
+]

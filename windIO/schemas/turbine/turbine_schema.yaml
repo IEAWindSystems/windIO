@@ -6,7 +6,7 @@
 
 
 $schema: "http://json-schema.org/draft-07/schema#"
-$id: IEA_ontology_v1.0
+$id: "windIO/turbine/turbine_schema"
 title: "windIO: Turbine"
 description: Ontology definition for wind turbines
 type: object

@@ -7,6 +7,7 @@ from pathlib import Path
 import numpy as np
 from ruamel.yaml import YAML
 from ruamel.yaml.constructor import SafeConstructor
+import netCDF4 # Importing netCFD to avoid warning: <frozen importlib._bootstrap>:241: RuntimeWarning: numpy.ndarray size changed, may indicate binary incompatibility. Expected 16 from C header, got 96 from PyObject
 import xarray as xr
 
 
