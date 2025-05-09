@@ -1,5 +1,4 @@
 # Draft schema definition for energy resource
-input_format_version: 0
 title: Energy resource
 type: object
 description: >-
@@ -10,7 +9,6 @@ description: >-
 required:
   - name
   - wind_resource
-
 
 # PROPERTIES
 properties:
@@ -23,15 +21,15 @@ properties:
   wind_resource:
     title: Wind resource
     type: object
-    decription: Resource where data optionally depend on wind_speed, wind_direction and/or position
+    description: Resource where data optionally depend on wind_speed, wind_direction and/or position
     oneOf:
-        - required: 
+      - required:
           - probability
-        - required:
+      - required:
           - weibull_a
           - weibull_k
           - sector_probability
-        - required:
+      - required:
           - time
           - wind_speed
           - wind_direction

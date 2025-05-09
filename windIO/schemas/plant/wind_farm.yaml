@@ -1,4 +1,3 @@
-input_format_version: 0
 title: Definition of the wind energy conversion system
 description: A file used to define either a single wind farm or multiple wind farms with turbine type mappings and additional built environment components
 required:
@@ -40,19 +39,16 @@ properties:
               type: array
               items:
                 type: integer
-              optional: true
 
   turbines:
     description: (Optional) The full turbine definition for the entire wind farm
     $ref: "turbine.yaml#"
-    optional: true
 
   turbine_types:
     description: (Optional) List of turbine types used for layouts. Required if turbine_types is used in layouts.
     type: object
     additionalProperties:
       $ref: "turbine.yaml#"
-    optional: true
 
   electrical_substations:
     description: Information about electrical substations
@@ -91,22 +87,21 @@ properties:
             title: Cable type
             description: List of available cable types
             type: array
-            units: mm2
+            units: mm^2
           cross_section:
             title: Cross section
             description: List of cable cross sections
             type: array
-            units: mm2
+            units: mm^2
           capacity:
             title: Cable capacity
             description: List of cable capacities
             type: array
-            units: WindTurbine / Cable
           cost:
             title: Cable cost
             description: List of cable costs
             type: array
-            units: euro/meter
+            units: USD/m
 
 definitions:
   coordinates:
@@ -115,17 +110,14 @@ definitions:
     required:
       - coordinates
     properties:
-      coordinates:
-        title: Wind turbine coordinates
-        description: Coordinates of the wind turbine tower base
-        $ref: "common.yaml#/definitions/coordinates"
-      identifiers:
-        title: (Optional) List of turbine identifiers
-        description: Identifiers for the wind turbines
+      x:
         type: array
         items:
-          type: string
-        optional: true
+          type: number
+      y:
+        type: array
+        items:
+          type: number
 
   electrical_substation:
     title: Electrical substation

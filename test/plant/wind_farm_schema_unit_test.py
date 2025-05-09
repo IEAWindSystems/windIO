@@ -1,8 +1,13 @@
+from pathlib import Path
 
+import jsonschema
 import pytest
-import windIO
-from .conftest import SampleInputs
 from jsonschema.exceptions import ValidationError
+
+import windIO
+import windIO.schemas
+
+from .conftest import SampleInputs
 
 
 def test_wind_farm_input(subtests):
@@ -59,6 +64,7 @@ def test_wind_farm_invalid_inputs_electrical_substations(subtests):
         del config["electrical_substations"][0]["electrical_substation"]["capacity"]
         windIO.validate(config, "plant/wind_farm") is None
 
+
 def test_wind_farm_invalid_inputs_electrical_collection_array(subtests):
     """
     Test missing inputs for the wind_farm electrical_collection_array property.
@@ -80,21 +86,40 @@ def test_wind_farm_invalid_inputs_electrical_collection_array(subtests):
         del config["electrical_collection_array"]["cables"]["cable_type"]
         with pytest.raises(ValidationError):
             windIO.validate(config, "plant/wind_farm")
-    
+
     with subtests.test("missing electrical_collection_array cables cross_section"):
         config = SampleInputs().wind_farm
         del config["electrical_collection_array"]["cables"]["cross_section"]
         with pytest.raises(ValidationError):
             windIO.validate(config, "plant/wind_farm")
-    
+
     with subtests.test("missing electrical_collection_array cables capacity"):
         config = SampleInputs().wind_farm
         del config["electrical_collection_array"]["cables"]["capacity"]
         with pytest.raises(ValidationError):
             windIO.validate(config, "plant/wind_farm")
-    
+
     with subtests.test("missing electrical_collection_array cables cost"):
         config = SampleInputs().wind_farm
         del config["electrical_collection_array"]["cables"]["cost"]
         with pytest.raises(ValidationError):
             windIO.validate(config, "plant/wind_farm")
+
+
+def test_plant_valid_schema():
+
+    assert windIO.schemas.has_pint is True, "`pint` should be installed to validate `windIO.plant` schemas"
+
+    schema_base = Path(__file__).parent.parent.parent / "windIO" / "schemas" / "plant"
+    for fschema in schema_base.rglob("*.yaml"):
+
+        path2schema = schema_base / fschema
+
+        schema = windIO.load_yaml(path2schema)
+
+        base_uri = "https://www.example.com/schemas/"
+        resolver = jsonschema.RefResolver(base_uri=base_uri, referrer=schema)
+        schema_folder = Path(path2schema).parent
+        windIO._add_local_schemas_to(resolver, schema_folder, base_uri)
+        windIO.schemas.windIOMetaSchema.resolver = resolver
+        windIO.schemas.windIOMetaSchema.check_schema(schema)
