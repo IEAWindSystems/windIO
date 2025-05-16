@@ -1,10 +1,9 @@
 [build-system]
-requires = ["setuptools >= 40.6.0", "wheel"]
+requires = ["setuptools >= 40.6.0", "wheel", "setuptools-scm>=8.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "windIO"
-version = "1.1"
 description = "Frameworks defining the inputs and outputs for systems engineering MDAO of wind turbine and plants."
 readme = "README.md"
 requires-python = ">=3.9"
@@ -31,6 +30,8 @@ dependencies = [
     'xarray',       # TODO: this is used to load netcdf files through the validation function XrResourceLoader
     "netcdf4",
 ]
+
+dynamic = ["version"]
 
 [project.optional-dependencies]
 docs = [
@@ -66,3 +67,6 @@ Documentation = "https://ieawindsystems.github.io/windio"
 filterwarnings = [
     "error"
 ]
+
+[tool.setuptools_scm]
+version_file = "windIO/version.py"
