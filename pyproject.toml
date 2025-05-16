@@ -38,6 +38,9 @@ docs = [
     "sphinx",
     "pydata-sphinx-theme",
     'json-schema-for-humans',
+    'gitpython',
+    'sphinx_multiversion',
+
 ]
 test = [
     'numpy',

@@ -40,6 +40,7 @@ extensions = [
     'sphinx.ext.autosectionlabel',
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
+    "sphinx_multiversion",
 ]
 
 napoleon_google_docstring = True
@@ -47,7 +48,10 @@ napoleon_use_param = False
 napoleon_use_rtype = False
 
 # Add any paths that contain templates here, relative to this directory.
-# templates_path = ['_templates']
+templates_path = [
+    "_templates",
+]
+
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -71,7 +75,14 @@ html_theme_options = {}
 html_theme_options["analytics"] = {
     "google_analytics_id": "G-8GPVFR9N4C",
 }
-
-html_sidebars = {
-    "**": []
+html_theme_options = {
+    "switcher": {
+        "json_url": "_static/switcher.json", 
+        "version_match": "{smv_current_version}"
+    },
+   "navbar_start": ["navbar-logo", "version-switcher"]
 }
+
+smv_released_pattern = r'^refs/tags/.*$'
+smv_branch_whitelist = r'^main$'
+
