@@ -2,6 +2,7 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath("../windIO"))
 
+
 # Configuration file for the Sphinx documentation builder.
 #
 # This file only contains a selection of the most common options. For a full
@@ -65,6 +66,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+# html_extra_path = ['_static/switcher.json']
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
@@ -76,13 +78,26 @@ html_theme_options["analytics"] = {
     "google_analytics_id": "G-8GPVFR9N4C",
 }
 html_theme_options = {
-    "switcher": {
-        "json_url": "_static/switcher.json", 
-        "version_match": "{smv_current_version}"
-    },
    "navbar_start": ["navbar-logo", "version-switcher"]
+   # switcher gets set dynamically
+}
+
+html_sidebars = {
+    "**": []
 }
 
 smv_released_pattern = r'^refs/tags/.*$'
 smv_branch_whitelist = r'^main$'
 
+def on_config_inited(app, config):
+    # This runs after the config is loaded but before the build starts
+    version_match = getattr(config, "smv_current_version", "local")
+    print("on_config_inited VERSION",version_match) 
+    config.html_theme_options["switcher"] = {
+        "json_url": "http://localhost:8000/main/_static/switcher.json",
+        "version_match": version_match
+    }
+
+def setup(app):
+    # Connect our custom handler to the config-inited event
+    app.connect("config-inited", on_config_inited)
