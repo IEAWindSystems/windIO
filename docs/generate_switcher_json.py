@@ -34,9 +34,7 @@ versions = []
 
 # Add 'main' or 'master' if present in branches
 if 'main' in branches:
-    versions.append({"version": "main", "url": f"{DEPLOY_URL}/main/"})
-# elif 'master' in branches:
-#     versions.append({"version": "master", "url": "/master/"})
+    versions.append({"name": "main", "version": "main", "url": f"{DEPLOY_URL}/main/"})
 
 # Add tags
 for tag in tags:
@@ -46,6 +44,8 @@ for tag in tags:
 
 # Add other branches (excluding main/master already added)
 for branch in branches:
+    if "test_doc" not in branch:
+        continue
     if branch not in ['main', 'master'] and not any(v["version"] == branch for v in versions):
         version = {"name": branch,
                    "version": branch, 
