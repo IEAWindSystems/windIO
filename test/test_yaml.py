@@ -223,7 +223,7 @@ def test_load_yaml():
     ), "`yaml_Path` should be a `pathlib.Path` instance"
     IEA_10_turb = windIO.load_yaml(yaml_pathlib_Path)
     windIO.validate(
-        IEA_10_turb, "plant/turbine"
+        IEA_10_turb, "plant/turbine", defaults = False,
     )  # Testing that the loaded schema is valid
 
     # Load from string instance
@@ -231,14 +231,14 @@ def test_load_yaml():
     assert isinstance(yaml_str, str), "`yaml_str` should be a `str` instance"
     IEA_10_turb = windIO.load_yaml(yaml_str)
     windIO.validate(
-        IEA_10_turb, "plant/turbine"
+        IEA_10_turb, "plant/turbine", defaults=False,
     )  # Testing that the loaded schema is valid
 
     # As a file-handle
     with open(yaml_pathlib_Path, "r") as file:
         IEA_10_turb = windIO.load_yaml(file)
         windIO.validate(
-            IEA_10_turb, "plant/turbine"
+            IEA_10_turb, "plant/turbine", defaults=False,
         )  # Testing that the loaded schema is valid
 
     # Fail if not a path-like argument

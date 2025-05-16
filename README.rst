@@ -79,7 +79,6 @@ The suggested method of incorporating windIO into your code is:
 
    # Other code here
 
-   windIO.validate(input="path/to/input.yaml", schema_type="plant/wind_energy_system <for example>")
-   windIO.load_yaml("path/to/input.yaml")
+   data = windIO.validate(input="path/to/input.yaml", schema_type="plant/wind_energy_system <for example>")
 
    # Conversion to your software's data structures here

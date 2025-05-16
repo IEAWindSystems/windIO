@@ -41,7 +41,7 @@ def test_validate_all_example_files():
             
             # Use pytest subtests to continue even if one file fails
             try:
-                windIO.validate(input=file_path, schema_type=schema_type)
+                windIO.validate(input=file_path, schema_type=schema_type, defaults = False)
             except Exception as e:
                 pytest.fail(f"Validation failed for {file_path}: {str(e)}")
 

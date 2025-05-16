@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path, PosixPath, WindowsPath
-import jsonschema.exceptions
 from referencing import Registry, Resource
 from referencing.exceptions import NoSuchResource
 import copy
@@ -52,7 +51,7 @@ def _enforce_no_additional_properties(schema):
 
 
 def validate(
-    input: dict | str | Path, schema_type: str, restrictive: bool = True
+    input: dict | str | Path, schema_type: str, restrictive: bool = True, defaults: bool = True,
 ) -> None:
     """
     Validates a given windIO input based on the selected schema type.
@@ -92,6 +91,29 @@ def validate(
         schema = _enforce_no_additional_properties(schema)
 
     _jsonschema_validate_modified(data, schema, registry=registry)
+
+    if defaults:
+        validator = DefaultValidatingDraft7Validator
+        validator(schema).validate(data)
+
+    return data
+
+
+# See: https://python-jsonschema.readthedocs.io/en/stable/faq/#why-doesn-t-my-schema-s-default-property-set-the-default-on-my-instance
+def extend_with_default(validator_class):
+    validate_properties = validator_class.VALIDATORS["properties"]
+
+    def set_defaults(validator, properties, instance, schema):
+        for property, subschema in properties.items():
+            if "default" in subschema:
+                instance.setdefault(property, subschema["default"])
+
+        for error in validate_properties(validator, properties, instance, schema):
+            yield error
+
+    return jsonschema.validators.extend(validator_class, {"properties": set_defaults})
+
+DefaultValidatingDraft7Validator = extend_with_default(jsonschema.Draft7Validator)
 
 def _jsonschema_validate_modified(instance, schema, cls=None, *args, **kwargs):
     """Modification of the `jsonschema.validate` which is though to provide a better error message when validation fails"""

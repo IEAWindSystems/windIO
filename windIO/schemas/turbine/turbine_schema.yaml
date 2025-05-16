@@ -3187,12 +3187,11 @@ properties:
     environment:
         type: object
         description: The field :code:`environment` includes the data characterizing air and water where the wind turbine operates.
-        required:
+        optional:
             - air_density
             - air_dyn_viscosity
             - air_speed_sound
             - shear_exp
-        optional:
             - gravity
             - weib_shape_parameter
             - water_density
