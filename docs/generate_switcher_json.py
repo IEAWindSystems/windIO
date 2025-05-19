@@ -19,8 +19,6 @@ repo = Repo(REPO_DIR)
 
 # Collect tags
 tags = sorted([tag.name for tag in repo.tags])
-print("TAGS", tags)
-# Collect branches from origin
 
 # remove this when everything works
 branches = sorted([
@@ -32,26 +30,25 @@ branches = sorted([
 # Compose versions list
 versions = []
 
-# Add 'main' or 'master' if present in branches
-if 'main' in branches:
-    versions.append({"name": "main", "version": "main", "url": f"{DEPLOY_URL}/main/"})
-
 # Add tags
+print("Docs will be built for the following tags:")
 for tag in tags:
     versions.append({"name": tag,
                      "version": tag, 
                      "url": f"{DEPLOY_URL}/{tag}/"})
+    print(tag)
 
-# Add other branches (excluding main/master already added)
+# Add branches that have test_doc in their name (excluding main/master already added)
+print("Docs will be built for the following branches")
 for branch in branches:
-    if "test_doc" not in branch:
+    if ("test_doc" not in branch) and (branch != "main"):
         continue
-    if branch not in ['main', 'master'] and not any(v["version"] == branch for v in versions):
+    else:
         version = {"name": branch,
                    "version": branch, 
                    "url": f"{DEPLOY_URL}/{branch}/"}
         versions.append(version)
-
+    print(branch)
 # Add 'latest' entry pointing to latest_branch
 versions.insert(0, {
     "name": "latest",
