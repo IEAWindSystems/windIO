@@ -27,8 +27,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      DEPLOY_URL: ${{ steps.deployment.outputs.page_url }}
+    # env:
+    #   DEPLOY_URL: ${{ steps.deployment.outputs.page_url }}
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -53,6 +53,7 @@ jobs:
         cp assets/gh-pages-redirect.html html/index.html
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        DEPLOY_URL: ${{ steps.deployment.outputs.page_url }}
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:
