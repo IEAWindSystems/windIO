@@ -50,7 +50,7 @@ jobs:
         python generate_switcher_json.py
         cat _static/switcher.json
         sphinx-multiversion . ./_build/html
-        cp assets/gh-pages-redirect.html html/index.html
+        cp assets/gh-pages-redirect.html _build/html/index.html
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
         DEPLOY_URL: ${{ steps.deployment.outputs.page_url }}
