@@ -4,6 +4,7 @@ on:
   push:
     branches:
     - main
+    - 'test_doc*'
     # paths:
     # - docs/**
 
@@ -26,6 +27,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      DEPLOY_URL: ${{ steps.deployment.outputs.page_url }}
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -43,7 +46,11 @@ jobs:
       working-directory: ${{runner.workspace}}/windIO/docs/
       run: |
         python schema_export.py
-        sphinx-build -M html . ./_build/
+        echo "DEPLOY_URL" ${DEPLOY_URL}
+        python generate_switcher_json.py
+        cat _static/switcher.json
+        sphinx-multiversion . ./_build/html
+        cp assets/gh-pages-redirect.html html/index.html
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
     - name: Upload artifact
@@ -57,6 +64,8 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: build
+    if: |
+      github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
