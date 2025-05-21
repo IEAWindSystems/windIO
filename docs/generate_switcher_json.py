@@ -26,7 +26,7 @@ branches = sorted([
     for ref in repo.remote().refs
     if not ref.name.endswith("/HEAD")
 ])
-
+print("branches and tags", branches, tags)
 # Compose versions list
 versions = []
 
