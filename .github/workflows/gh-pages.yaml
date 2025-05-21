@@ -55,7 +55,7 @@ jobs:
         sphinx-multiversion . ./_build/html
         cp assets/gh-pages-redirect.html _build/html/index.html
         cd _build/html
-        ln -s latest main
+        cp -r main latest
         cd ../..
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
