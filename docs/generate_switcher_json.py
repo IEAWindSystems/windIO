@@ -22,9 +22,7 @@ tags = sorted([tag.name for tag in repo.tags])
 
 # remove this when everything works
 branches = sorted([
-    ref.name.replace("origin/", "")
-    for ref in repo.remote().refs
-    if not ref.name.endswith("/HEAD")
+    ref.name for ref in repo.branches
 ])
 print("branches and tags", branches, tags)
 # Compose versions list
