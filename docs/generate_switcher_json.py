@@ -10,7 +10,7 @@ STATIC_DIR = os.path.join(REPO_DIR, 'docs', '_static')
 # relies on soft link of latest tag to "latest"    
 latest_branch = "latest"
 
-DEPLOY_URL = os.environ.get("DEPLOY_URL", "")
+DEPLOY_URL = os.environ.get("DEPLOY_URL", "https://ieawindsystems.github.io")
 
 SWITCHER_JSON_PATH = os.path.join(STATIC_DIR, 'switcher.json')
 
