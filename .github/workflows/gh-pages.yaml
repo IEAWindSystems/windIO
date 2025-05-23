@@ -50,6 +50,7 @@ jobs:
       run: |
         python schema_export.py
         git fetch origin
+        git branch -a
         python generate_switcher_json.py
         cat _static/switcher.json
         sphinx-multiversion . ./_build/html
