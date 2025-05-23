@@ -49,7 +49,7 @@ jobs:
       working-directory: ${{runner.workspace}}/windIO/docs/
       run: |
         python schema_export.py
-        echo "DEPLOY_URL" ${DEPLOY_URL}
+        git fetch origin
         python generate_switcher_json.py
         cat _static/switcher.json
         sphinx-multiversion . ./_build/html
