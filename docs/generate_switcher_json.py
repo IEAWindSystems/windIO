@@ -17,6 +17,8 @@ SWITCHER_JSON_PATH = os.path.join(STATIC_DIR, 'switcher.json')
 # Open repo
 repo = Repo(REPO_DIR)
 print("REPO", repo.references)
+for branch in repo.references:
+    print("ref", branch.name, branch.path)
 # Collect tags
 tags = sorted([tag.name for tag in repo.tags])
 
