@@ -24,7 +24,7 @@ tags = sorted([tag.name for tag in repo.tags])
 
 # remove this when everything works
 branches = sorted([
-    ref.name for ref in repo.references
+    ref.name.split("/")[-1] for ref in repo.references
     if ref.path.startswith('refs/heads/') or ref.name.startswith('refs/remotes/')
 ])
 print("branches and tags", branches, tags)
