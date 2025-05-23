@@ -16,13 +16,14 @@ SWITCHER_JSON_PATH = os.path.join(STATIC_DIR, 'switcher.json')
 
 # Open repo
 repo = Repo(REPO_DIR)
-
+print("REPO", repo.references)
 # Collect tags
 tags = sorted([tag.name for tag in repo.tags])
 
 # remove this when everything works
 branches = sorted([
-    ref.name for ref in repo.branches
+    ref.name for ref in repo.references
+    if ref.path.startswith('refs/heads/') or ref.name.startswith('refs/remotes/')
 ])
 print("branches and tags", branches, tags)
 # Compose versions list
