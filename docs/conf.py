@@ -87,15 +87,14 @@ html_sidebars = {
 }
 
 smv_released_pattern = r'^refs/tags/.*$'
-smv_branch_whitelist = r'^(remotes/origin/)?(main|test_doc.*)$'
+smv_branch_whitelist = r'^(remotes/origin/)?(main)$'
 smv_remote_whitelist = r'^(origin)$'
-# smv_branch_whitelist = r'^(main|remotes/origin/main|test_doc.*)$'
 
 def on_config_inited(app, config):
     # This runs after the config is loaded but before the build starts
     version_match = getattr(config, "smv_current_version", "local")
-    print("on_config_inited VERSION",version_match) 
-    DEPLOY_URL = os.environ.get("DEPLOY_URL", "https://ieawindsystems.github.io")
+    DEPLOY_URL = os.environ.get("DEPLOY_URL", "https://ieawindsystems.github.io/windIO")
+    print("on_config_inited VERSION", version_match, DEPLOY_URL) 
     config.html_theme_options["switcher"] = {
         "json_url": "%s/main/_static/switcher.json" % DEPLOY_URL,
         "version_match": version_match
