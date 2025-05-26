@@ -33,8 +33,16 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: build
+    with:
+      name: Upload artifact
+      run-id: ${{ github.event.workflow_run.id }}
+      github-token: ${{ secrets.GITHUB_TOKEN }}
     steps:
+      - name: Download artifact from build-pages workflow
+        uses: actions/download-artifact@v4
+        with:
+          name: build-pages
+          path: ${{runner.workspace}}/windIO/docs/_build/html
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
