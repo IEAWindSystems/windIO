@@ -42,7 +42,8 @@ for tag in tags:
 # Add branches that have test_doc in their name (excluding main/master already added)
 print("Docs will be built for the following branches")
 for branch in branches:
-    if ("test_doc" not in branch) and (branch != "main"):
+    if (branch != "main"):
+    # if ("test_doc" not in branch) and (branch != "main"):
         continue
     else:
         version = {"name": branch,
