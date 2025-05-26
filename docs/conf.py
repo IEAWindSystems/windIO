@@ -87,7 +87,7 @@ html_sidebars = {
 }
 
 smv_released_pattern = r'^refs/tags/.*$'
-smv_branch_whitelist = r'^(origin/main|test_doc.*)$'
+smv_branch_whitelist = r'^(main|remotes/origin/main|test_doc.*)$'
 
 def on_config_inited(app, config):
     # This runs after the config is loaded but before the build starts
