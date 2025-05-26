@@ -88,6 +88,7 @@ html_sidebars = {
 
 smv_released_pattern = r'^refs/tags/.*$'
 smv_branch_whitelist = r'^(remotes/origin/)?(main|test_doc.*)$'
+smv_remote_whitelist = r'^(origin)$'
 # smv_branch_whitelist = r'^(main|remotes/origin/main|test_doc.*)$'
 
 def on_config_inited(app, config):
