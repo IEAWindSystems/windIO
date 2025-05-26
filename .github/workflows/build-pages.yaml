@@ -3,7 +3,7 @@ name: build-pages
 on:
   push:
     branches:
-    - *
+    - "**"
     # paths:
     # - docs/**
 
