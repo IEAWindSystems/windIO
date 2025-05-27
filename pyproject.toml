@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "windIO"
-version = "1.0"
+version = "1.1.1"
 description = "Frameworks defining the inputs and outputs for systems engineering MDAO of wind turbine and plants."
 readme = "README.md"
 requires-python = ">=3.9"

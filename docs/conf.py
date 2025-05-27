@@ -26,7 +26,7 @@ copyright = '2020, IEA Wind Task 37'
 author = 'IEA Wind Task 37'
 
 # The full version, including alpha/beta/rc tags
-release = 'v1.0'
+release = 'v1.1.1'
 
 
 # -- General configuration ---------------------------------------------------
