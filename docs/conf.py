@@ -27,7 +27,7 @@ copyright = '2025, IEA Wind Task 55 REFWIND'
 author = 'IEA Wind Task 55 REFWIND'
 
 # The full version, including alpha/beta/rc tags
-release = 'v1.1'
+release = 'v2.0-alpha'
 
 
 # -- General configuration ---------------------------------------------------
