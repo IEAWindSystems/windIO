@@ -228,8 +228,16 @@ class v1p0_to_v2p0:
 
             layer["name"] = name
             if is_web:
-                layer["start_nd_grid"] = layer_v1p0["start_nd_arc"]["grid"][0]
-                layer["end_nd_grid"] = layer_v1p0["start_nd_arc"]["grid"][-1]
+                if "start_nd_arc" in layer_v1p0:
+                    layer["start_nd_grid"] = layer_v1p0["start_nd_arc"]["grid"][0]
+                    layer["end_nd_grid"] = layer_v1p0["start_nd_arc"]["grid"][-1]
+                elif "offset_y_pa" in layer_v1p0:
+                    layer["start_nd_grid"] = layer_v1p0["offset_y_pa"]["grid"][0]
+                    layer["end_nd_grid"] = layer_v1p0["offset_y_pa"]["grid"][-1]
+                else:
+                    print(f"⚠️ Field start_nd_arc or offset_y_pa not found for {name}. Using dummy values for start_nd_grid.")
+                    layer["start_nd_grid"] = 0.0
+                    layer["end_nd_grid"] = 1.0
             else:
                 layer["start_nd_grid"] = layer_v1p0["thickness"]["grid"][0]
                 layer["end_nd_grid"] = layer_v1p0["thickness"]["grid"][-1]
@@ -279,15 +287,18 @@ class v1p0_to_v2p0:
                         print("⚠️ Required field end_nd_arc not found for %s. Please check." % layer_v1p0["name"])
                         print(f"Error details: {e}")
             if "midpoint_nd_arc" in layer_v1p0:
+                if anchor is None:
+                    anchor = {}
                 if "fixed" in layer_v1p0["midpoint_nd_arc"]:
                     anchor["midpoint_nd_arc"] = {}
                     anchor["midpoint_nd_arc"]["anchor"] = {"name": layer_v1p0["midpoint_nd_arc"]["fixed"],
                                                            "handle": "start_nd_arc"}
                     if layer_v1p0["midpoint_nd_arc"]["fixed"] == "LE":
                         print("⚠️ Computing LE anchor from layer %s, please check!" % layer_v1p0["name"])
-                        LE = (np.array(layer_v1p0["end_nd_arc"]["values"]) + np.array(layer_v1p0["start_nd_arc"]["values"])) / 2.0
+                        LE = (np.array(layer_v1p0.get("end_nd_arc", {}).get("values", np.ones_like(layer_v1p0["thickness"]["grid"]))) + 
+                                       layer_v1p0.get("start_nd_arc", {}).get("values", np.ones_like(layer_v1p0["thickness"]["grid"]))) / 2.0
                         LE_anchor = {"name": "LE",
-                                     "start_nd_arc": {"grid": layer_v1p0["start_nd_arc"]["grid"],
+                                     "start_nd_arc": {"grid": layer_v1p0.get("start_nd_arc", {}).get("grid", np.ones_like(layer_v1p0["thickness"]["grid"])),
                                                       "values": LE}
                                                       }
                         if "LE" in anchor_names:
@@ -773,7 +784,7 @@ if __name__ == "__main__":
 
     turbine_reference_path = Path(windIO.turbine_ex.__file__).parent
 
-    filename_v1p0 = "To_be_set"
+    filename_v1p0 = r"../../test/turbine/v1p0/IEA-15-240-RWT.yaml" 
     filename_v2p0 = turbine_reference_path / "IEA-15-240-RWT_v2p0.yaml"
     
     if not os.path.exists(filename_v1p0):
