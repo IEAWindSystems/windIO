@@ -1061,6 +1061,13 @@ properties:
                             minimum: -100.0
                             maximum: 0.0
                             description: Words
+                        S_Nmax:
+                            type: number
+                            default: -0.2
+                            units: dimensionless
+                            minimum: -100.0
+                            maximum: 0.0
+                            description: Words
                         alpha_p:
                             type: number
                             default: 1.0995574287564276
