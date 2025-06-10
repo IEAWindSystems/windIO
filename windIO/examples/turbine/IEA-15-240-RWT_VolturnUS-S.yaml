@@ -707,77 +707,9 @@ components:
             mb2Type: SRB
             uptower: true
         generator:
-            rho_Fe: 7700.0
-            rho_Fes: 7850.0
-            rho_Copper: 8900.0
-            rho_PM: 7450.0
-            B_r: 1.279
-            P_Fe0e: 1.0
-            P_Fe0h: 4.0
-            S_N: -0.002
-            alpha_p: 1.0995574287564276
-            b_r_tau_r: 0.45
-            b_ro: 0.004
-            b_s_tau_s: 0.45
-            b_so: 0.004
-            cofi: 0.9
-            freq: 60.0
-            h_i: 0.004
-            h_sy0: 0.0
-            h_w: 0.005
-            k_fes: 0.8
-            k_fillr: 0.55
-            k_fills: 0.65
-            k_s: 0.2
-            m: 3
-            mu_0: 1.2566370614359173e-06
-            mu_r: 1.06
-            phi: 90.0
-            q1: 5
-            q2: 4
-            ratio_mw2pp: 0.8
-            resist_Cu: 2.52e-08
-            y_tau_pr: 0.8333333
-            y_tau_p: 0.8
-            rad_ag: 5.12623359
-            len_s: 2.23961662
-            tau_p: 0.1610453779
-            tau_s: 0.1339360726
-            h_s: 0.3769449149
-            b_s: 0.05121796888
-            b_t: 0.08159225451
-            h_t: 0.3859449149
-            h_ys: 0.03618114528
-            h_yr: 0.0361759511
-            h_m: 0.0995385122
-            b_m: 0.1288363023
-            B_g: 1.38963289
-            B_symax: 1.63455514
-            B_rymax: 1.63478983
-            p: 100
-            R_s: 0.02457052
-            L_s: 0.01138752
-            S: 240
-            t_r: 0.0607657125
-            h_sr: 0.04677116325
-            t_s: 0.06065213554
-            h_ss: 0.04650825863
-            E_p: 1905.2558883257652
-            b: 2.0
-            c: 5.0
-            N_c: 2
-            B_tmax: 1.9
-            u_allow_pcent: 8.5
-            y_allow_pcent: 1.0
-            z_allow_deg: 0.05
-            sigma: 60000
-            h_0: 0.05
-            C_Cu: 4.786
-            C_Fe: 0.556
-            C_Fes: 0.50139
-            C_PM: 50.0
             length: 2.15
-            type: PMSG_Outer
+            mass: 368840.0
+            radius: 5.31
     tower:
         outer_shape:
             outer_diameter:
@@ -814,31 +746,31 @@ components:
               location: [0.0, 0.0, 15.0]
               transition: true
            -  name: col1_keel
-              location: [51.75, 3.14159265, -20.0]
+              location: [51.75, 180.0, -20.0]
               cylindrical: true
            -  name: col1_freeboard
-              location: [51.75, 3.14159265, 15.0]
+              location: [51.75, 180.0, 15.0]
               cylindrical: true
            -  name: col2_keel
-              location: [51.75, 1.0471976, -20.0]
+              location: [51.75, 60.0, -20.0]
               cylindrical: true
            -  name: col2_freeboard
-              location: [51.75, 1.0471975, 15.0]
+              location: [51.75, 60.0, 15.0]
               cylindrical: true
            -  name: col3_keel
-              location: [51.75, -1.0471976, -20.0]
+              location: [51.75, -60.0, -20.0]
               cylindrical: true
            -  name: col3_freeboard
-              location: [51.75, -1.0471976, 15.0]
+              location: [51.75, -60.0, 15.0]
               cylindrical: true
            -  name: anchor1
-              location: [837.8, 3.14159265, -200.0]
+              location: [837.8, 180.0, -200.0]
               cylindrical: true
            -  name: anchor2
-              location: [837.8, 1.0471976, -200.0]
+              location: [837.8, 60.0, -200.0]
               cylindrical: true
            -  name: anchor3
-              location: [837.8, -1.0471976, -200.0]
+              location: [837.8, -60.0, -200.0]
               cylindrical: true
         members:
            -  name: main_column
@@ -854,8 +786,8 @@ components:
                     grid: 0.987
                  -  name: main_lower_pontoon
                     grid: 0.1
-              ca: 1.0
-              cd: 0.8
+              Ca: 1.0
+              Cd: 0.8
               structure:
                   layers:
                      -  name: main_twall
@@ -883,8 +815,8 @@ components:
                     grid: 0.1
                  -  name: col1_fairlead
                     grid: 0.1714
-              ca: 1.0
-              cd: 0.8
+              Ca: 1.0
+              Cd: 0.8
               structure: &id004
                   layers:
                      -  name: col_twall
@@ -915,8 +847,8 @@ components:
                     grid: 0.1
                  -  name: col2_fairlead
                     grid: 0.1714
-              ca: 1.0
-              cd: 0.8
+              Ca: 1.0
+              Cd: 0.8
               structure: *id004
            -  name: column3
               joint1: col3_keel
@@ -929,8 +861,8 @@ components:
                     grid: 0.1
                  -  name: col3_fairlead
                     grid: 0.1714
-              ca: 1.0
-              cd: 0.8
+              Ca: 1.0
+              Cd: 0.8
               structure: *id004
            -  name: Y_pontoon_upper1
               joint1: main_upper_pontoon
@@ -940,8 +872,8 @@ components:
                   outer_diameter:
                       grid: [0.0, 1.0]
                       values: [0.91, 0.91]
-              ca: 1.0
-              cd: 0.8
+              Ca: 1.0
+              Cd: 0.8
               structure: &id006
                   layers:
                      -  name: pontoon_upper_twall
@@ -953,15 +885,15 @@ components:
               joint1: main_upper_pontoon
               joint2: col2_upper_pontoon
               outer_shape: *id005
-              ca: 1.0
-              cd: 0.8
+              Ca: 1.0
+              Cd: 0.8
               structure: *id006
            -  name: Y_pontoon_upper3
               joint1: main_upper_pontoon
               joint2: col3_upper_pontoon
               outer_shape: *id005
-              ca: 1.0
-              cd: 0.8
+              Ca: 1.0
+              Cd: 0.8
               structure: *id006
            -  name: Y_pontoon_lower1
               joint1: main_lower_pontoon
@@ -971,8 +903,8 @@ components:
                   outer_diameter:
                       grid: [0.0, 1.0]
                       values: [9.6148, 9.6148]
-              ca: 1.0
-              cd: 0.8
+              Ca: 1.0
+              Cd: 0.8
               structure: &id008
                   layers:
                      -  name: pontoon_lower_twall
@@ -987,15 +919,15 @@ components:
               joint1: main_lower_pontoon
               joint2: col2_lower_pontoon
               outer_shape: *id007
-              ca: 1.0
-              cd: 0.8
+              Ca: 1.0
+              Cd: 0.8
               structure: *id008
            -  name: Y_pontoon_lower3
               joint1: main_lower_pontoon
               joint2: col3_lower_pontoon
               outer_shape: *id007
-              ca: 1.0
-              cd: 0.8
+              Ca: 1.0
+              Cd: 0.8
               structure: *id008
     mooring:
         nodes:

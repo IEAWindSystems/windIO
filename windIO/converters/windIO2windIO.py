@@ -577,25 +577,15 @@ class v1p0_to_v2p0:
         if "uptower" in v1p0_dt:
             dict_v2p0["components"]["drivetrain"]["other_components"]["uptower"] = v1p0_dt["uptower"]
         
+        dict_v2p0["components"]["drivetrain"]["generator"] = {}
         if "generator" in v1p0_nac:
-            dict_v2p0["components"]["drivetrain"]["generator"] = deepcopy(v1p0_nac["generator"])
-            if "generator_type" in v1p0_nac["generator"]:
-                dict_v2p0["components"]["drivetrain"]["generator"]["type"] = v1p0_nac["generator"]["generator_type"]
-                dict_v2p0["components"]["drivetrain"]["generator"].pop("generator_type")
-            if "phi" in v1p0_nac["generator"]:
-                phi_rad = dict_v2p0["components"]["drivetrain"]["generator"]["phi"]
-                dict_v2p0["components"]["drivetrain"]["generator"]["phi"] = np.rad2deg(phi_rad)
+            #dict_v2p0["components"]["drivetrain"]["generator"] = deepcopy(v1p0_nac["generator"])
             if "generator_length" in v1p0_nac["generator"]:
                 dict_v2p0["components"]["drivetrain"]["generator"]["length"] = v1p0_nac["generator"]["generator_length"]
                 dict_v2p0["components"]["drivetrain"]["generator"].pop("generator_length")
-            if "rated_rpm" in v1p0_nac["generator"]:
-                dict_v2p0["components"]["drivetrain"]["generator"].pop("rated_rpm")
-            if "S_Nmax" in v1p0_nac["generator"]:
-                dict_v2p0["components"]["drivetrain"]["generator"].pop("S_Nmax")
         else:
-            dict_v2p0["components"]["drivetrain"]["generator"] = {}
-        if "generator_length" in v1p0_dt:
-            dict_v2p0["components"]["drivetrain"]["generator"]["length"] = v1p0_dt["generator_length"]
+            if "generator_length" in v1p0_dt:
+                dict_v2p0["components"]["drivetrain"]["generator"]["length"] = v1p0_dt["generator_length"]
         if "generator_radius_user" in v1p0_dt:
             dict_v2p0["components"]["drivetrain"]["generator"]["radius"] = v1p0_dt["generator_radius_user"]
         if "generator_mass_user" in v1p0_dt:
@@ -648,17 +638,21 @@ class v1p0_to_v2p0:
 
     def convert_floating_platform(self, dict_v2p0):
         # Rad to deg in some inputs to floating platform
-
+        joints = dict_v2p0["components"]["floating_platform"]["joints"]
+        for i_joint in range(len(joints)):
+            if "cylindrical" in joints[i_joint] and joints[i_joint]["cylindrical"]:
+                joints[i_joint]["location"][1] = np.rad2deg( joints[i_joint]["location"][1] )
+        
         members = dict_v2p0["components"]["floating_platform"]["members"]
         for i_memb in range(len(members)):
             # some renaming
-            members[i_memb]["ca"] = members[i_memb]["Ca"]
-            members[i_memb].pop("Ca")
-            members[i_memb]["cd"] = members[i_memb]["Cd"]
-            members[i_memb].pop("Cd")
-            if "Cp" in members[i_memb]:
-                members[i_memb]["cp"] = members[i_memb]["Cp"]
-                members[i_memb].pop("Cp")
+            #members[i_memb]["ca"] = members[i_memb]["Ca"]
+            #members[i_memb].pop("Ca")
+            #members[i_memb]["cd"] = members[i_memb]["Cd"]
+            #members[i_memb].pop("Cd")
+            #if "Cp" in members[i_memb]:
+            #    members[i_memb]["cp"] = members[i_memb]["Cp"]
+            #    members[i_memb].pop("Cp")
             members[i_memb]["structure"] = members[i_memb]["internal_structure"]
             members[i_memb].pop("internal_structure")
             if "ballasts" in members[i_memb]["structure"]:

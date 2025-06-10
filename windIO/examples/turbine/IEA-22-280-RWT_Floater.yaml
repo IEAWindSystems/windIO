@@ -816,39 +816,39 @@ components:
               transition: true
               cylindrical: false
            -  name: col1_keel
-              location: [65.0, 3.14159265, -25.0]
+              location: [65.0, 180.0, -25.0]
               cylindrical: true
               transition: false
            -  name: col1_freeboard
-              location: [65.0, 3.14159265, 15.0]
+              location: [65.0, 180.0, 15.0]
               cylindrical: true
               transition: false
            -  name: col2_keel
-              location: [65.0, 1.0471976, -25.0]
+              location: [65.0, 60.0, -25.0]
               cylindrical: true
               transition: false
            -  name: col2_freeboard
-              location: [65.0, 1.0471975, 15.0]
+              location: [65.0, 60.0, 15.0]
               cylindrical: true
               transition: false
            -  name: col3_keel
-              location: [65.0, -1.0471976, -25.0]
+              location: [65.0, -60.0, -25.0]
               cylindrical: true
               transition: false
            -  name: col3_freeboard
-              location: [65.0, -1.0471976, 15.0]
+              location: [65.0, -60.0, 15.0]
               cylindrical: true
               transition: false
            -  name: anchor1
-              location: [837.8, 3.14159265, -200.0]
+              location: [837.8, 180.0, -200.0]
               cylindrical: true
               transition: false
            -  name: anchor2
-              location: [837.8, 1.0471976, -200.0]
+              location: [837.8, 60.0, -200.0]
               cylindrical: true
               transition: false
            -  name: anchor3
-              location: [837.8, -1.0471976, -200.0]
+              location: [837.8, -60.0, -200.0]
               cylindrical: true
               transition: false
         members:
@@ -865,9 +865,9 @@ components:
                     grid: 0.987
                  -  name: main_lower_pontoon
                     grid: 0.2
-              ca: [1.0, 1.0]
-              cd: [0.8, 0.8]
-              cp: 0.0
+              Ca: [1.0, 1.0]
+              Cd: [0.8, 0.8]
+              Cp: 0.0
               structure:
                   layers:
                      -  name: main_twall
@@ -899,9 +899,9 @@ components:
                     grid: 0.2
                  -  name: col1_fairlead
                     grid: 0.1714
-              ca: [1.0, 1.0]
-              cd: [0.8, 0.8]
-              cp: 0.0
+              Ca: [1.0, 1.0]
+              Cd: [0.8, 0.8]
+              Cp: 0.0
               structure: &id003
                   layers:
                      -  name: col_twall
@@ -943,9 +943,9 @@ components:
                     grid: 0.2
                  -  name: col2_fairlead
                     grid: 0.1714
-              ca: [1.0, 1.0]
-              cd: [0.8, 0.8]
-              cp: 0.0
+              Ca: [1.0, 1.0]
+              Cd: [0.8, 0.8]
+              Cp: 0.0
               structure: *id003
            -  name: column3
               joint1: col3_keel
@@ -958,9 +958,9 @@ components:
                     grid: 0.2
                  -  name: col3_fairlead
                     grid: 0.1714
-              ca: [1.0, 1.0]
-              cd: [0.8, 0.8]
-              cp: 0.0
+              Ca: [1.0, 1.0]
+              Cd: [0.8, 0.8]
+              Cp: 0.0
               structure: *id003
            -  name: Y_pontoon_upper1
               joint1: main_upper_pontoon
@@ -970,9 +970,9 @@ components:
                   outer_diameter:
                       grid: [0.0, 1.0]
                       values: [0.91, 0.91]
-              ca: [1.0, 1.0]
-              cd: [0.8, 0.8]
-              cp: 0.0
+              Ca: [1.0, 1.0]
+              Cd: [0.8, 0.8]
+              Cp: 0.0
               structure: &id005
                   layers:
                      -  name: pontoon_upper_twall
@@ -990,17 +990,17 @@ components:
               joint1: main_upper_pontoon
               joint2: col2_upper_pontoon
               outer_shape: *id004
-              ca: [1.0, 1.0]
-              cd: [0.8, 0.8]
-              cp: 0.0
+              Ca: [1.0, 1.0]
+              Cd: [0.8, 0.8]
+              Cp: 0.0
               structure: *id005
            -  name: Y_pontoon_upper3
               joint1: main_upper_pontoon
               joint2: col3_upper_pontoon
               outer_shape: *id004
-              ca: [1.0, 1.0]
-              cd: [0.8, 0.8]
-              cp: 0.0
+              Ca: [1.0, 1.0]
+              Cd: [0.8, 0.8]
+              Cp: 0.0
               structure: *id005
            -  name: Y_pontoon_lower1
               joint1: main_lower_pontoon
@@ -1010,9 +1010,9 @@ components:
                   outer_diameter:
                       grid: [0.0, 1.0]
                       values: [10.0, 10.0]
-              ca: [1.0, 1.0]
-              cd: [0.8, 0.8]
-              cp: 0.0
+              Ca: [1.0, 1.0]
+              Cd: [0.8, 0.8]
+              Cp: 0.0
               structure: &id007
                   layers:
                      -  name: pontoon_lower_twall
@@ -1033,17 +1033,17 @@ components:
               joint1: main_lower_pontoon
               joint2: col2_lower_pontoon
               outer_shape: *id006
-              ca: [1.0, 1.0]
-              cd: [0.8, 0.8]
-              cp: 0.0
+              Ca: [1.0, 1.0]
+              Cd: [0.8, 0.8]
+              Cp: 0.0
               structure: *id007
            -  name: Y_pontoon_lower3
               joint1: main_lower_pontoon
               joint2: col3_lower_pontoon
               outer_shape: *id006
-              ca: [1.0, 1.0]
-              cd: [0.8, 0.8]
-              cp: 0.0
+              Ca: [1.0, 1.0]
+              Cd: [0.8, 0.8]
+              Cp: 0.0
               structure: *id007
     mooring:
         nodes:
