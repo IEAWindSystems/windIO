@@ -177,9 +177,9 @@ if True:
                 arrowprops=dict(arrowstyle='->',
                                 color="black",
                                 linewidth=1))
-    ref_axis = [0., 0.]
+    ref_axis = [0.02, -0.04]
     ax.plot(*ref_axis, 'ko')  # origin
-    ax.annotate('Reference axis (x, y, z)', xy=ref_axis, xytext=(-0.3, 0.2), arrowprops=dict(arrowstyle='->', color="black", linewidth=1))
+    ax.annotate('Reference axis (x, y, z)', xy=ref_axis, xytext=(0.3, -0.2), arrowprops=dict(arrowstyle='->', color="black", linewidth=1))
 
     # ax.plot(0, 0, 'ko')  # origin
     # ax.annotate('reference_axis (x, y, z)', xy=(-0.01, 0.01), xytext=(-0.35, 0.2), arrowprops=dict(arrowstyle='->', color="black", linewidth=1))
@@ -223,13 +223,26 @@ if True:
     # Apply rotation
     offset_x = rot.apply(offset_x)
     ax.annotate(
-        '', xy=offset_x[-1, :2], xytext=offset_x[0, :2],
-        arrowprops=dict(arrowstyle='<->', color="blue", linewidth=2)
+        '', xy=offset_x[-1, :2], xytext=[-0.28, -0.16],
+        arrowprops=dict(arrowstyle='<-', color="blue", linewidth=2)
     )
     ax.annotate(
-        'section_offset_x', xy=offset_x[-1, :2], xytext=np.array([-0.11, -0.12]),
+        'section_offset_y', xy=offset_x[-1, :2], xytext=np.array([-0.14, -0.12]),
         
     )
+
+    ax.annotate(
+        '', xy=[0, 0], xytext=ref_axis,
+        arrowprops=dict(arrowstyle='->', color="blue", linewidth=2)
+    )
+    ax.annotate(
+        'section_offset_x', xy=[0, 0.1], xytext=[0.02, -0.03],
+        
+    )
+
+    ac = [-0.06, -0.02]
+    ax.plot(*ac, 'ko')  # origin
+    ax.annotate('Aerodynamic center (-)', xy=ac, xytext=(-0.3, 0.2), arrowprops=dict(arrowstyle='->', color="black", linewidth=1))
 
 
     # Style
