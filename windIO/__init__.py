@@ -6,6 +6,7 @@ import copy
 from pathlib import Path, PosixPath, WindowsPath
 import jsonschema
 import json
+import xarray as xr
 from urllib.parse import urljoin
 
 ### API design
