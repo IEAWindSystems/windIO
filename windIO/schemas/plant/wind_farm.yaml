@@ -42,6 +42,13 @@ properties:
               items:
                 type: integer
 
+   tags:
+     description: List of turbine id/tags
+     type: array
+     items:
+       type: str
+     optional: true
+
   turbines:
     description: (Optional) The full turbine definition for the entire wind farm
     $ref: "./turbine.yaml#"
