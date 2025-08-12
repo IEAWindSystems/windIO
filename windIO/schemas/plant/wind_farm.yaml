@@ -42,7 +42,7 @@ properties:
               items:
                 type: integer
 
-  tags:
+  identifiers:
     description: List of turbine id/tags
     type: array
     items:
