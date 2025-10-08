@@ -124,8 +124,8 @@ properties:
       rotor_effective_velocity:
         title: rotor effective velocity in m/s
         description: Rotor effective velocity
-        $ref: "common.yaml#/definitions/multi_dimensional_data"
+        $ref: "./common.yaml#/definitions/multi_dimensional_data"
       thrust:
         title: Thrust force in N
         description: Thrust force in N
-        $ref: "./common.yaml#/definitions/multi_dimensional_coordinate"
+        $ref: "./common.yaml#/definitions/multi_dimensional_data"
