@@ -1,5 +1,4 @@
 # Draft schema definition for outputs
-input_format_version: 0
 title: SCADA data
 type: object
 $id: "windIO/plant/scada_data"
