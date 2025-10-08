@@ -19,10 +19,14 @@ class v1p0_to_v2p0:
         dict_v1p0 = windIO.load_yaml(self.filename_v1p0)
         
         # Set windIO version
-        dict_v2p0 = {"windIO_version": "2.0"}
+        self.dict_v2p0 = dict_v2p0 = {"windIO_version": "2.0"}
 
         # Copy the input windio dict
         dict_v2p0.update(deepcopy(dict_v1p0))
+
+        if "description" in dict_v2p0:
+            dict_v2p0["comments"] = dict_v2p0["description"]
+            dict_v2p0.pop("description")
 
         try:
             dict_v2p0 = self.convert_blade(dict_v2p0)
@@ -82,6 +86,14 @@ class v1p0_to_v2p0:
             print(traceback.format_exc())
             print("⚠️ Control block database could not be converted successfully. Please check.")
             print(f"Error details: {e}")
+        
+        # If present, remove WISDEM specific environment, bos, and costs properties from schema
+        if "environment" in dict_v2p0:
+            dict_v2p0.pop("environment")
+        if "bos" in dict_v2p0:
+            dict_v2p0.pop("bos")
+        if "costs" in dict_v2p0:
+            dict_v2p0.pop("costs")
 
         # Print out
         print("New yaml file being generated: %s"%self.filename_v2p0)
@@ -93,8 +105,9 @@ class v1p0_to_v2p0:
         dict_v2p0 = self.convert_blade_reference_axis(dict_v2p0)
         dict_v2p0 = self.convert_blade_outer_shape(dict_v2p0)
         dict_v2p0 = self.convert_blade_structure(dict_v2p0)
-        if "six_x_six" in dict_v2p0["components"]["blade"]["elastic_properties_mb"]:
-            dict_v2p0 = self.convert_elastic_properties(dict_v2p0)
+        if "elastic_properties_mb" in dict_v2p0["components"]["blade"]:
+            if "six_x_six" in dict_v2p0["components"]["blade"]["elastic_properties_mb"]:
+                dict_v2p0 = self.convert_elastic_properties(dict_v2p0)
         return dict_v2p0
     
     def convert_blade_reference_axis(self, dict_v2p0):
@@ -110,24 +123,24 @@ class v1p0_to_v2p0:
         dict_v2p0["components"]["blade"]["outer_shape"] = dict_v2p0["components"]["blade"]["outer_shape_bem"]
         dict_v2p0["components"]["blade"].pop("outer_shape_bem")
         
-        # Switch from pitch_axis to section_offset_x
+        # Switch from pitch_axis to section_offset_y
         # First interpolate on chord grid
         blade_os = dict_v2p0["components"]["blade"]["outer_shape"]
         pitch_axis_grid =  blade_os["pitch_axis"]["grid"]
         pitch_axis_values =  blade_os["pitch_axis"]["values"]
         chord_grid =  blade_os["chord"]["grid"]
         chord_values =  blade_os["chord"]["values"]
-        section_offset_x_grid = chord_grid
-        pitch_axis_interp = np.interp(section_offset_x_grid,
+        section_offset_y_grid = chord_grid
+        pitch_axis_interp = np.interp(section_offset_y_grid,
                                       pitch_axis_grid,
                                       pitch_axis_values,
                                       )
         # Now dimensionalize offset using chord
-        section_offset_x_values = pitch_axis_interp * chord_values
+        section_offset_y_values = pitch_axis_interp * chord_values
         blade_os.pop("pitch_axis")
-        blade_os["section_offset_x"] = {}
-        blade_os["section_offset_x"]["grid"] = section_offset_x_grid
-        blade_os["section_offset_x"]["values"] = section_offset_x_values
+        blade_os["section_offset_y"] = {}
+        blade_os["section_offset_y"]["grid"] = section_offset_y_grid
+        blade_os["section_offset_y"]["values"] = section_offset_y_values
         
         # Convert twist from rad to deg
         twist_rad = blade_os["twist"]["values"]
@@ -152,10 +165,10 @@ class v1p0_to_v2p0:
                 for j in range(n_af_available):
                     if blade_os["airfoil_position"]["labels"][i] == dict_v2p0["airfoils"][j]["name"]:
                         rthick_v1p0[i] = dict_v2p0["airfoils"][j]["relative_thickness"]
-            # Use numpy polyfit
-            coeffs = np.polyfit(blade_os["airfoil_position"]["grid"], rthick_v1p0, deg=3)
-            poly = np.poly1d(coeffs)
-            rthick = poly(chord_grid)
+            from scipy.interpolate import PchipInterpolator
+            spline = PchipInterpolator
+            rthick_spline = spline(blade_os["airfoil_position"]["grid"], rthick_v1p0)
+            rthick = rthick_spline(chord_grid)
             rthick[rthick>1.]=1.
             blade_os["rthick"] = {}
             blade_os["rthick"]["grid"] = chord_grid
@@ -172,20 +185,222 @@ class v1p0_to_v2p0:
         # Convert field `rotation` from rad to deg when defined in webs/layers
         # Also, switch label offset_y_pa to offset_y_reference_axis
         blade_struct = dict_v2p0["components"]["blade"]["structure"]
-        for iweb in range(len(blade_struct["webs"])):
-            if "rotation" in blade_struct["webs"][iweb]:
-                rotation_rad = blade_struct["webs"][iweb]["rotation"]["values"]
-                blade_struct["webs"][iweb]["rotation"]["values"] = np.rad2deg(rotation_rad)
-            if "offset_y_pa" in blade_struct["webs"][iweb]:
-                blade_struct["webs"][iweb]["offset_y_reference_axis"] = blade_struct["webs"][iweb]["offset_y_pa"]
-                blade_struct["webs"][iweb].pop("offset_y_pa")
-        for ilayer in range(len(blade_struct["layers"])):
-            if "rotation" in blade_struct["layers"][ilayer]:
-                rotation_rad = blade_struct["layers"][ilayer]["rotation"]["values"]
-                blade_struct["layers"][ilayer]["rotation"]["values"] = np.rad2deg(rotation_rad)
-            if "offset_y_pa" in blade_struct["layers"][ilayer]:
-                blade_struct["layers"][ilayer]["offset_y_reference_axis"] = blade_struct["layers"][ilayer]["offset_y_pa"]
-                blade_struct["layers"][ilayer].pop("offset_y_pa")
+        layers_v1p0 = deepcopy(dict_v2p0["components"]["blade"]["structure"]["layers"])
+        webs_v1p0 = deepcopy(dict_v2p0["components"]["blade"]["structure"]["webs"])
+
+        # construct new sub-sections
+        blade_struct["anchors"] = []
+        te_anchor = {"name": "TE",
+                     "start_nd_arc": {
+                         "grid": [0., 1.],
+                         "values": [0.0, 0.0]
+                        },
+                     "end_nd_arc": {
+                         "grid": [0., 1.],
+                         "values": [1.0, 1.0]
+                        }
+                     }
+        le_anchor = {"name": "LE",
+                     "start_nd_arc": {
+                         "grid": [0., 1.],
+                         "values": [0.5, 0.5]
+                        },
+                     }
+        blade_struct["anchors"].append(te_anchor)
+        blade_struct["anchors"].append(le_anchor)
+        print("Warning: Adding LE anchor with dummy values, update manually!")
+        blade_struct["webs"] = []
+        blade_struct["layers"] = []
+
+        def convert_arcs(layer_v1p0, anchors, is_web=False):
+
+            anchor_names = [a["name"] for a in anchors]
+
+            name = layer_v1p0["name"]
+            layer = {}
+            anchor = None
+            start_anchor_name = "not_defined"
+            start_anchor_handle = "not_defined"
+            end_anchor_name = "not_defined"
+            end_anchor_handle = "not_defined"
+            start_fixed = None
+            end_fixed = None
+
+            layer["name"] = name
+            if is_web:
+                start_nd_grid = layer_v1p0["start_nd_arc"]["grid"][0]
+                end_nd_grid = layer_v1p0["start_nd_arc"]["grid"][-1]
+            else:
+                start_nd_grid = layer_v1p0["thickness"]["grid"][0]
+                end_nd_grid = layer_v1p0["thickness"]["grid"][-1]
+
+            zeros_dict = {"grid": [start_nd_grid, end_nd_grid],
+                          "values": [0.0, 0.0]}
+            ones_dict = {"grid": [start_nd_grid, end_nd_grid],
+                          "values": [1.0, 1.0]}
+            dummy_dict = {"grid": "N/A",
+                          "values": "N/A"}
+            # move definition of start_nd_arc and end_nd_arc to anchors
+            if "start_nd_arc" in layer_v1p0:
+                if "fixed" in layer_v1p0["start_nd_arc"]:
+                    start_fixed = layer_v1p0["start_nd_arc"]["fixed"]
+                    # we don't construct a new anchor but reference an existing one
+                    start_anchor_name = layer_v1p0["start_nd_arc"]["fixed"]
+                    if start_fixed == "TE":
+                        start_anchor_handle = "start_nd_arc"
+                    else:
+                        start_anchor_handle = "end_nd_arc"
+                else:
+                    if anchor is None:
+                        anchor = {}
+                    anchor["name"] = name
+                    anchor["start_nd_arc"] = layer_v1p0["start_nd_arc"]
+                    start_anchor_name = layer_v1p0["name"]
+                    start_anchor_handle = "start_nd_arc"
+            if "end_nd_arc" in layer_v1p0:
+                if "fixed" in layer_v1p0["end_nd_arc"]:
+                    # we don't construct a new anchor but reference an existing one
+                    end_fixed = layer_v1p0["end_nd_arc"]["fixed"]
+                    end_anchor_name = layer_v1p0["end_nd_arc"]["fixed"]
+                    if end_fixed == "TE":
+                        end_anchor_handle = "end_nd_arc"
+                    else:
+                        end_anchor_handle = "start_nd_arc"
+                else:
+                    try:
+                        if anchor is None:
+                            anchor = {}
+                        anchor["name"] = name
+                        anchor["end_nd_arc"] = layer_v1p0["end_nd_arc"]
+                        end_anchor_name = layer_v1p0["name"]
+                        end_anchor_handle = "end_nd_arc"
+                    except Exception as e:
+                        print(traceback.format_exc())
+                        print("⚠️ Required field end_nd_arc not found for %s. Please check." % layer_v1p0["name"])
+                        print(f"Error details: {e}")
+            if "midpoint_nd_arc" in layer_v1p0:
+                if "fixed" in layer_v1p0["midpoint_nd_arc"]:
+                    anchor["midpoint_nd_arc"] = {}
+                    anchor["midpoint_nd_arc"]["anchor"] = {"name": layer_v1p0["midpoint_nd_arc"]["fixed"],
+                                                           "handle": "start_nd_arc"}
+                    if layer_v1p0["midpoint_nd_arc"]["fixed"] == "LE":
+                        print("⚠️ Computing LE anchor from layer %s, please check!" % layer_v1p0["name"])
+                        LE = (np.array(layer_v1p0["end_nd_arc"]["values"]) + np.array(layer_v1p0["start_nd_arc"]["values"])) / 2.0
+                        LE_anchor = {"name": "LE",
+                                     "start_nd_arc": {"grid": layer_v1p0["start_nd_arc"]["grid"],
+                                                      "values": LE}
+                                                      }
+                        if "LE" in anchor_names:
+                            anchors[anchor_names.index("LE")] = LE_anchor
+                        else:
+                            anchors.append(LE_anchor)
+
+                if "width" in layer_v1p0:
+                    anchor["width"] = {}
+                    anchor["width"]["defines"] = ["start_nd_arc", "end_nd_arc"]
+                    anchor["width"].update(layer_v1p0["width"])
+                else:
+                    raise ValueError("width is not defined for %s, required when midpoint_nd_arc is defined" % layer_v1p0["name"])
+            if "width" in layer_v1p0:
+                if anchor is None:
+                    anchor = {}
+                anchor["name"] = name
+                anchor["width"] = {}
+                anchor["width"].update(layer_v1p0["width"])
+                anchor["width"]["defines"] = ["start_nd_arc", "end_nd_arc"]
+                if start_fixed and end_fixed:
+                    raise ValueError("entity %s cannot define fixtures and both start and end"
+                                    " and also define a width" % layer_v1p0["name"])
+                if start_fixed:
+                    anchor["width"]["defines"] = ["end_nd_arc"]
+                    anchor["start_nd_arc"] = {"anchor": {
+                        "name": start_anchor_name,
+                        "handle": start_anchor_handle
+                    }}
+                # else:
+                #     anchor["start_nd_arc"] = dummy_dict
+                #     print("start_nd_arc not found for %s, adding dummy values!" % name)
+                if end_fixed:
+                    anchor["width"]["defines"] = ["start_nd_arc"]
+                    anchor["end_nd_arc"] = {"anchor": {
+                        "name": end_anchor_name,
+                        "handle": end_anchor_handle
+                    }}
+                # else:
+                #     anchor["end_nd_arc"] = dummy_dict
+                #     print("end_nd_arc not found for %s, adding dummy values!" % name)
+                # anchor["width"] = {"anchor": {
+                #     "name": end_anchor_name,
+                #     "handle": end_anchor_handle
+                # }}
+            if "rotation" in layer_v1p0 and "offset_y_pa" in layer_v1p0:
+                print("Found offset_y_pa in %s. Assuming rotation to be equal to blade twist!" % layer_v1p0["name"])
+                # construct plane_intersection section with zero rotation
+                isect = anchor["plane_intersection"] = {}
+                if is_web:
+                    isect["side"] = "both"
+                    isect["defines"] = ["start_nd_arc", "end_nd_arc"]
+                else:
+                    isect["side"] = layer_v1p0["side"]
+                    isect["defines"] = ["midpoint_nd_arc"]
+                isect["plane_type1"] = {"anchor_curve": "reference_axis",
+                                        "anchors_nd_grid": [0.0, 1.0],
+                                        "rotation": 0.0}
+                isect["offset"] = layer_v1p0["offset_y_pa"]
+                
+            # make cross-reference in web to the anchors
+            layer.setdefault("start_nd_arc", {}).setdefault("anchor", {})
+            layer["start_nd_arc"]["anchor"]["name"] = start_anchor_name
+            layer["start_nd_arc"]["anchor"]["handle"] = start_anchor_handle
+            layer.setdefault("end_nd_arc", {}).setdefault("anchor", {})
+            layer["end_nd_arc"]["anchor"]["name"] = end_anchor_name
+            layer["end_nd_arc"]["anchor"]["handle"] = end_anchor_handle
+
+            if is_web:
+                web_anchor = {}
+                web_anchor["name"] = "%s_shell_attachment" % name
+                web_anchor["start_nd_arc"] = zeros_dict
+                web_anchor["end_nd_arc"] = ones_dict
+                
+                layer["anchors"] = [web_anchor]
+
+            if "web" in layer_v1p0:
+                anchor_name = layer_v1p0["web"]
+                layer["web"] = layer_v1p0["web"]
+                layer["start_nd_arc"]["anchor"]["name"] = anchor_name + "_shell_attachment"
+                layer["start_nd_arc"]["anchor"]["handle"] = "start_nd_arc"
+                layer["end_nd_arc"]["anchor"]["name"] = anchor_name + "_shell_attachment"
+                layer["end_nd_arc"]["anchor"]["handle"] = "end_nd_arc"
+            if not is_web:
+                layer["material"] = layer_v1p0["material"]
+                layer["thickness"] = layer_v1p0["thickness"]
+                layer["fiber_orientation"] = layer_v1p0.get("fiber_orientation", zeros_dict)
+                if "n_plies" in layer_v1p0:
+                    layer["n_plies"] = layer_v1p0["n_plies"]
+            if anchor is not None:
+                if "start_nd_arc" not in anchor:
+                    anchor["start_nd_arc"] = zeros_dict
+                    print("⚠️ Required field start_nd_arc not found for %s. Adding a dummy field." % layer_v1p0["name"])
+                if "end_nd_arc" not in anchor:
+                    anchor["end_nd_arc"] = ones_dict
+                    print("⚠️ Required field end_nd_arc not found for %s. Adding a dummy field." % layer_v1p0["name"])
+
+            return layer, anchor
+        
+        for web_v1p0 in webs_v1p0:
+            web, anchor = convert_arcs(web_v1p0,
+                                       blade_struct["anchors"],
+                                       is_web=True)
+            if anchor is not None:
+                blade_struct["anchors"].append(anchor)
+            blade_struct["webs"].append(web)
+        for layer_v1p0 in layers_v1p0:
+            layer, anchor = convert_arcs(layer_v1p0,
+                                         blade_struct["anchors"],
+                                         is_web=False)
+            if anchor is not None:
+                blade_struct["anchors"].append(anchor)
+            blade_struct["layers"].append(layer)
         
         # Pop older ref axis
         blade_struct.pop("reference_axis")
@@ -197,8 +412,9 @@ class v1p0_to_v2p0:
         dict_v2p0["components"]["blade"]["elastic_properties"] = dict_v2p0["components"]["blade"]["elastic_properties_mb"]
         dict_v2p0["components"]["blade"].pop("elastic_properties_mb")
         # Redefine stiffness and inertia matrices listing each element individually as opposed to an array
-        dict_v2p0["components"]["blade"]["elastic_properties"] = dict_v2p0["components"]["blade"]["elastic_properties"]["six_x_six"]
-        blade_beam = dict_v2p0["components"]["blade"]["elastic_properties"]
+        dict_v2p0["components"]["blade"]["structure"]["elastic_properties"] = dict_v2p0["components"]["blade"]["elastic_properties"]["six_x_six"]
+        blade_beam = dict_v2p0["components"]["blade"]["structure"]["elastic_properties"]
+        dict_v2p0["components"]["blade"].pop("elastic_properties")
 
         # # Start by moving structural twist from rad to deg
         # if "values" in blade_beam["twist"]:
@@ -272,6 +488,7 @@ class v1p0_to_v2p0:
 
         # Split nacelle components
         v1p0_dt = deepcopy(dict_v2p0["components"]["nacelle"]["drivetrain"])
+        v1p0_nac = deepcopy(dict_v2p0["components"]["nacelle"])
         dict_v2p0["components"]["drivetrain"] = {}
         dict_v2p0["components"]["drivetrain"]["outer_shape"] = {}
         if "uptilt" in v1p0_dt:
@@ -292,11 +509,11 @@ class v1p0_to_v2p0:
         if "gear_ratio" in v1p0_dt:
             dict_v2p0["components"]["drivetrain"]["gearbox"]["gear_ratio"] =  v1p0_dt["gear_ratio"]
         if "length_user" in v1p0_dt:
-            dict_v2p0["components"]["drivetrain"]["gearbox"]["length_user"] = v1p0_dt["length_user"]
+            dict_v2p0["components"]["drivetrain"]["gearbox"]["length"] = v1p0_dt["length_user"]
         if "radius_user" in v1p0_dt:
-            dict_v2p0["components"]["drivetrain"]["gearbox"]["radius_user"] = v1p0_dt["radius_user"]
+            dict_v2p0["components"]["drivetrain"]["gearbox"]["radius"] = v1p0_dt["radius_user"]
         if "mass_user" in v1p0_dt:
-            dict_v2p0["components"]["drivetrain"]["gearbox"]["mass_user"] = v1p0_dt["mass_user"]
+            dict_v2p0["components"]["drivetrain"]["gearbox"]["mass"] = v1p0_dt["mass_user"]
         if "gearbox_efficiency" in v1p0_dt:
             dict_v2p0["components"]["drivetrain"]["gearbox"]["efficiency"] = v1p0_dt["gearbox_efficiency"]
         if "damping_ratio" in v1p0_dt:
@@ -346,38 +563,36 @@ class v1p0_to_v2p0:
         
         dict_v2p0["components"]["drivetrain"]["other_components"] = {}
         if "brake_mass_user" in v1p0_dt:
-            dict_v2p0["components"]["drivetrain"]["other_components"]["brake_mass_user"] = v1p0_dt["brake_mass_user"]
+            dict_v2p0["components"]["drivetrain"]["other_components"]["brake_mass"] = v1p0_dt["brake_mass_user"]
         if "hvac_mass_coefficient" in v1p0_dt:
             dict_v2p0["components"]["drivetrain"]["other_components"]["hvac_mass_coefficient"] = v1p0_dt["hvac_mass_coefficient"]
         if "converter_mass_user" in v1p0_dt:
-            dict_v2p0["components"]["drivetrain"]["other_components"]["converter_mass_user"] = v1p0_dt["converter_mass_user"]
+            dict_v2p0["components"]["drivetrain"]["other_components"]["converter_mass"] = v1p0_dt["converter_mass_user"]
         if "transformer_mass_user" in v1p0_dt:
-            dict_v2p0["components"]["drivetrain"]["other_components"]["transformer_mass_user"] = v1p0_dt["transformer_mass_user"]
+            dict_v2p0["components"]["drivetrain"]["other_components"]["transformer_mass"] = v1p0_dt["transformer_mass_user"]
         if "mb1Type" in v1p0_dt:
             dict_v2p0["components"]["drivetrain"]["other_components"]["mb1Type"] = v1p0_dt["mb1Type"]
         if "mb2Type" in v1p0_dt:
             dict_v2p0["components"]["drivetrain"]["other_components"]["mb2Type"] = v1p0_dt["mb2Type"]
         if "uptower" in v1p0_dt:
             dict_v2p0["components"]["drivetrain"]["other_components"]["uptower"] = v1p0_dt["uptower"]
-        
-        if "generator" in dict_v2p0["components"]["nacelle"]:
-            dict_v2p0["components"]["drivetrain"]["generator"] = deepcopy(dict_v2p0["components"]["nacelle"]["generator"])
-            if "generator_length" in v1p0_dt:
-                dict_v2p0["components"]["drivetrain"]["generator"]["length"] = v1p0_dt["generator_length"]
-            if "generator_radius_user" in v1p0_dt:
-                dict_v2p0["components"]["drivetrain"]["generator"]["radius"] = v1p0_dt["generator_radius_user"]
-            if "generator_mass_user" in v1p0_dt:
-                dict_v2p0["components"]["drivetrain"]["generator"]["mass"] = v1p0_dt["generator_mass_user"]
-            if "rpm_efficiency_user" in v1p0_dt:
-                dict_v2p0["components"]["drivetrain"]["generator"]["rpm_efficiency"] = v1p0_dt["rpm_efficiency_user"]
-            v1p0_gen = deepcopy(dict_v2p0["components"]["nacelle"]["generator"])
-            if "generator_type" in v1p0_gen:
-                dict_v2p0["components"]["drivetrain"]["generator"]["type"] = v1p0_gen["generator_type"]
-                dict_v2p0["components"]["drivetrain"]["generator"].pop("generator_type")
 
-            if "phi" in dict_v2p0["components"]["drivetrain"]["generator"]:
-                phi_rad = dict_v2p0["components"]["drivetrain"]["generator"]["phi"]
-                dict_v2p0["components"]["drivetrain"]["generator"]["phi"] = np.rad2deg(phi_rad)
+        dict_v2p0["components"]["drivetrain"]["generator"] = {}
+        if "generator" in v1p0_nac:
+            #dict_v2p0["components"]["drivetrain"]["generator"] = deepcopy(v1p0_nac["generator"])
+            if "generator_length" in v1p0_nac["generator"]:
+                dict_v2p0["components"]["drivetrain"]["generator"]["length"] = v1p0_nac["generator"]["generator_length"]
+                if "generator_length" in dict_v2p0["components"]["drivetrain"]["generator"]:
+                    dict_v2p0["components"]["drivetrain"]["generator"].pop("generator_length")
+            else:
+                if "generator_length" in v1p0_dt:
+                    dict_v2p0["components"]["drivetrain"]["generator"]["length"] = v1p0_dt["generator_length"]
+        if "generator_radius_user" in v1p0_dt:
+            dict_v2p0["components"]["drivetrain"]["generator"]["radius"] = v1p0_dt["generator_radius_user"]
+        if "generator_mass_user" in v1p0_dt:
+            dict_v2p0["components"]["drivetrain"]["generator"]["mass"] = v1p0_dt["generator_mass_user"]
+        if "rpm_efficiency_user" in v1p0_dt:
+            dict_v2p0["components"]["drivetrain"]["generator"]["rpm_efficiency"] = v1p0_dt["rpm_efficiency_user"]
 
         dict_v2p0["components"].pop("nacelle")
 
@@ -397,7 +612,7 @@ class v1p0_to_v2p0:
         # Pop out older ref_axis
         tower["outer_shape"].pop("reference_axis")
         tower["structure"].pop("reference_axis")
-        # Rename drag_coeffcient to cd
+        # Rename drag_coefficient to cd
         cd_tower = tower["outer_shape"]["drag_coefficient"]
         tower["outer_shape"]["cd"] = cd_tower
         tower["outer_shape"].pop("drag_coefficient")
@@ -416,7 +631,7 @@ class v1p0_to_v2p0:
         # Pop out older ref_axis
         monopile["outer_shape"].pop("reference_axis")
         monopile["structure"].pop("reference_axis")
-        # Rename drag_coeffcient to cd
+        # Rename drag_coefficient to cd
         cd_monopile = monopile["outer_shape"]["drag_coefficient"]
         monopile["outer_shape"]["cd"] = cd_monopile
         monopile["outer_shape"].pop("drag_coefficient")
@@ -424,14 +639,21 @@ class v1p0_to_v2p0:
 
     def convert_floating_platform(self, dict_v2p0):
         # Rad to deg in some inputs to floating platform
-
+        joints = dict_v2p0["components"]["floating_platform"]["joints"]
+        for i_joint in range(len(joints)):
+            if "cylindrical" in joints[i_joint] and joints[i_joint]["cylindrical"]:
+                joints[i_joint]["location"][1] = np.rad2deg( joints[i_joint]["location"][1] )
+        
         members = dict_v2p0["components"]["floating_platform"]["members"]
         for i_memb in range(len(members)):
             # some renaming
-            members[i_memb]["ca"] = members[i_memb]["Ca"]
-            members[i_memb].pop("Ca")
-            members[i_memb]["cd"] = members[i_memb]["Cd"]
-            members[i_memb].pop("Cd")
+            #members[i_memb]["ca"] = members[i_memb]["Ca"]
+            #members[i_memb].pop("Ca")
+            #members[i_memb]["cd"] = members[i_memb]["Cd"]
+            #members[i_memb].pop("Cd")
+            #if "Cp" in members[i_memb]:
+            #    members[i_memb]["cp"] = members[i_memb]["Cp"]
+            #    members[i_memb].pop("Cp")
             members[i_memb]["structure"] = members[i_memb]["internal_structure"]
             members[i_memb].pop("internal_structure")
             if "ballasts" in members[i_memb]["structure"]:
@@ -444,10 +666,6 @@ class v1p0_to_v2p0:
             if "rotation" in members[i_memb]["outer_shape"]:
                 rotation_rad = members[i_memb]["outer_shape"]["rotation"]
                 members[i_memb]["outer_shape"]["rotation"] = np.rad2deg(rotation_rad)
-            if "ring_stiffeners" in members[i_memb]["structure"]:
-                if "spacing" in members[i_memb]["structure"]["ring_stiffeners"]:
-                    spacing_rad = members[i_memb]["structure"]["ring_stiffeners"]["spacing"]
-                    members[i_memb]["structure"]["ring_stiffeners"]["spacing"] = np.rad2deg(spacing_rad)
         return dict_v2p0
 
     def convert_airfoils(self, dict_v2p0):
@@ -550,7 +768,7 @@ if __name__ == "__main__":
 
     turbine_reference_path = Path(windIO.turbine_ex.__file__).parent
 
-    filename_v1p0 = "To_be_set"
+    filename_v1p0 = "../../test/turbine/v1p0/IEA-15-240-RWT.yaml"
     filename_v2p0 = turbine_reference_path / "IEA-15-240-RWT_v2p0.yaml"
     
     if not os.path.exists(filename_v1p0):

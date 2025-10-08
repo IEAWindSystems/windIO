@@ -1,10 +1,9 @@
 [build-system]
-requires = ["setuptools >= 40.6.0", "wheel"]
+requires = ["setuptools >= 40.6.0", "wheel", "setuptools-scm>=8.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "windIO"
-version = "1.1"
 description = "Frameworks defining the inputs and outputs for systems engineering MDAO of wind turbine and plants."
 readme = "README.md"
 requires-python = ">=3.9"
@@ -32,17 +31,23 @@ dependencies = [
     "netcdf4",
 ]
 
+dynamic = ["version"]
+
 [project.optional-dependencies]
 docs = [
     "sphinx",
     "pydata-sphinx-theme",
     'json-schema-for-humans',
+    'gitpython',
+    'sphinx_multiversion',
+
 ]
 test = [
     'numpy',
     "pytest",
     "pytest-subtests",
-    "pint"
+    "pint",
+    "scipy"
 ]
 
 [tool.setuptools.packages.find]
@@ -61,3 +66,11 @@ windIO = [
 [project.urls]
 Homepage = "https://github.com/IEAWindSystems/windIO"
 Documentation = "https://ieawindsystems.github.io/windio"
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "error"
+]
+
+[tool.setuptools_scm]
+version_file = "windIO/version.py"

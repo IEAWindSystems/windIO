@@ -1,3 +1,5 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+$id: "windIO/plant/common"
 definitions:
   coordinate:
     title: Coordinate
@@ -22,12 +24,10 @@ definitions:
         description: Height coordinate
         type: number
         units: m
-        optional: true
       crs:
         title: (Optional) Coordinate reference system
         description: Coordinate reference system described as a PROJ string
         type: string
-        optional: true
   #~
   coordinates:
     title: Coordinates
@@ -90,14 +90,12 @@ definitions:
     items:
       oneOf:
         - type: number
-        - 
-          type: "string"
+        - type: "string"
           format: "date-time"
 
   nondimensional_coordinate:
     title: Data with custom dimensions
     oneOf:
       - type: number
-      - 
-        type: "string"
+      - type: "string"
         format: "date-time"

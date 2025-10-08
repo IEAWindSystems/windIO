@@ -1,5 +1,6 @@
 # Draft schema definition for outputs
-input_format_version: 0
+$schema: "http://json-schema.org/draft-07/schema#"
+$id: "windIO/plant/outputs"
 title: Outputs
 type: object
 description: >
@@ -11,7 +12,7 @@ description: >
 properties:
   #~
   wind_energy_system:
-    $ref: "wind_energy_system.yaml"
+    $ref: "./wind_energy_system.yaml"
   #~
   flow_field:
     title: Flow Field
@@ -29,59 +30,59 @@ properties:
       time:
         title: Time
         description: Timestamps for the data points
-        $ref: "common.yaml#/definitions/multi_dimensional_coordinate"
+        $ref: "./common.yaml#/definitions/multi_dimensional_coordinate"
       x:
         title: X coordinate
         description: West-East coordinate
         oneOf:
-          - $ref: "common.yaml#/definitions/multi_dimensional_data"
-          - $ref: "common.yaml#/definitions/multi_dimensional_coordinate"
+          - $ref: "./common.yaml#/definitions/multi_dimensional_data"
+          - $ref: "./common.yaml#/definitions/multi_dimensional_coordinate"
       y:
         title: Y coordinate
         description: South-North coordinate
         oneOf:
-          - $ref: "common.yaml#/definitions/multi_dimensional_data"
-          - $ref: "common.yaml#/definitions/multi_dimensional_coordinate"
+          - $ref: "./common.yaml#/definitions/multi_dimensional_data"
+          - $ref: "./common.yaml#/definitions/multi_dimensional_coordinate"
       z:
         title: Z coordinate
         description: Vertical coordinate
-        $ref: "common.yaml#/definitions/multi_dimensional_coordinate"
+        $ref: "./common.yaml#/definitions/multi_dimensional_coordinate"
       points:
         title: Points in the field
         description: Dimension of the number of points in a field
-        $ref: "common.yaml#/definitions/multi_dimensional_coordinate"
+        $ref: "./common.yaml#/definitions/multi_dimensional_coordinate"
       wind_speed:
         title: wind speed
         description: Velocity magnitude in m/s
-        $ref: "common.yaml#/definitions/multi_dimensional_data"
+        $ref: "./common.yaml#/definitions/multi_dimensional_data"
       wind_direction:
         title: wind direction
         description: wind direction in degrees
-        $ref: "common.yaml#/definitions/multi_dimensional_data"
+        $ref: "./common.yaml#/definitions/multi_dimensional_data"
       u:
         title: U velocity
         description: Velocity in the x direction in m/s
-        $ref: "common.yaml#/definitions/multi_dimensional_data"
+        $ref: "./common.yaml#/definitions/multi_dimensional_data"
       v:
         title: V velocity
         description: Velocity in the y direction in m/s
-        $ref: "common.yaml#/definitions/multi_dimensional_data"
+        $ref: "./common.yaml#/definitions/multi_dimensional_data"
       w:
         title: W velocity
         description: Velocity in the z direction in m/s
-        $ref: "common.yaml#/definitions/multi_dimensional_data"
+        $ref: "./common.yaml#/definitions/multi_dimensional_data"
       pressure:
         title: Pressure
         description: Pressure field
-        $ref: "common.yaml#/definitions/multi_dimensional_data"
+        $ref: "./common.yaml#/definitions/multi_dimensional_data"
       potential_temperature:
         title: Potential temperature
         description: Potential temperature field
-        $ref: "common.yaml#/definitions/multi_dimensional_data"
-      k:
+        $ref: "./common.yaml#/definitions/multi_dimensional_data"
+      TKE:
         title: Turbulent Kinetic Energy
         description: Turbulent Kinetic Energy (TKE) field
-        $ref: "common.yaml#/definitions/multi_dimensional_data"
+        $ref: "./common.yaml#/definitions/multi_dimensional_data"
 
   #~
   turbine_data:
@@ -99,27 +100,27 @@ properties:
       time:
         title: Time
         description: Timestamps for the data points
-        $ref: "common.yaml#/definitions/multi_dimensional_coordinate"
+        $ref: "./common.yaml#/definitions/multi_dimensional_coordinate"
       turbine:
         title: Wind turbine number
         description: Turbine number based on coordinates order
-        $ref: "common.yaml#/definitions/multi_dimensional_coordinate"
+        $ref: "./common.yaml#/definitions/multi_dimensional_coordinate"
       power:
         title: Power
         description: Power output in Watts
-        $ref: "common.yaml#/definitions/multi_dimensional_data"
+        $ref: "./common.yaml#/definitions/multi_dimensional_data"
       effective_wind_speed:
         title: Effective Wind Speed in m/s
         description: Effective wind speed
-        $ref: "common.yaml#/definitions/multi_dimensional_data"
+        $ref: "./common.yaml#/definitions/multi_dimensional_data"
       wind_direction:
         title: Wind Direction in degrees
         description: Wind direction coordinates
-        $ref: "common.yaml#/definitions/multi_dimensional_data"
+        $ref: "./common.yaml#/definitions/multi_dimensional_data"
       wind_speed:
         title: Wind Speed in m/s
         description: Wind speed coordinates
-        $ref: "common.yaml#/definitions/multi_dimensional_data"
+        $ref: "./common.yaml#/definitions/multi_dimensional_data"
       rotor_effective_velocity:
         title: rotor effective velocity in m/s
         description: Rotor effective velocity
@@ -127,4 +128,4 @@ properties:
       thrust:
         title: Thrust force in N
         description: Thrust force in N
-        $ref: "common.yaml#/definitions/multi_dimensional_data"
+        $ref: "./common.yaml#/definitions/multi_dimensional_coordinate"

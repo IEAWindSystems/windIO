@@ -1,7 +1,11 @@
-import numpy as np
+import os
 from io import StringIO
 from pathlib import Path
+
+import pytest
+import numpy as np
 import xarray as xr
+import ruamel.yaml.error
 
 import windIO
 import windIO.yaml
@@ -142,7 +146,7 @@ def test_write_numpy():
     # Reset file location
     tfile.seek(0)
 
-    # Convert "file" to python data withOUT numpy reader 
+    # Convert "file" to python data withOUT numpy reader
     dout = windIO.yaml._get_YAML().load(tfile)
 
     # Asserting that dicts are equal
@@ -161,7 +165,9 @@ def test_include():
         key_name = key_name.strip(":")
         lines.pop(7)
         out_wo_inc = windIO.yaml._get_YAML().load("\n".join(lines))
-        out_wo_inc[key_name] = windIO.yaml._get_YAML().load(Path(filename).parent / sub_filename)
+        out_wo_inc[key_name] = windIO.yaml._get_YAML().load(
+            Path(filename).parent / sub_filename
+        )
 
     out = windIO.load_yaml(filename)
     assert_equal_dicts(out, out_wo_inc)
@@ -174,7 +180,9 @@ def test_include():
         key_name = key_name.strip(":")
         lines.pop(1)
         out_wo_inc = windIO.yaml._get_YAML().load("\n".join(lines))
-        out_wo_inc[key_name] = windIO.yaml._ds2yml(xr.open_dataset(Path(filename).parent / sub_filename))
+        out_wo_inc[key_name] = windIO.yaml._ds2yml(
+            xr.open_dataset(Path(filename).parent / sub_filename)
+        )
     out = windIO.yaml._get_YAML().load(
         base_path / "plant_energy_resource/GriddedResource_nc.yaml"
     )
@@ -188,7 +196,7 @@ def test_numpy_read():
         b=[[0.1, 0.2], [0.3, 0.4]],
         c=dict(a=[0.1, 0.2], b=[[0.1, 0.2], [0.3, 0.4]]),
         d=[5, [1.0, 3.0], "test"],
-        e=["test1", "test2"]
+        e=["test1", "test2"],
     )
     str_repr = StringIO()
     windIO.yaml._get_YAML().dump(test_data, str_repr)
@@ -206,3 +214,37 @@ def test_numpy_read():
     assert isinstance(data["d"], list), "`d` should remain a list"
     assert isinstance(data["e"], list), "`e` should remain a list"
 
+
+def test_load_yaml():
+    yaml_pathlib_Path = Path(windIO.plant_ex.__file__).parent / "plant_energy_turbine" / "IEA37_10MW_turbine.yaml"
+    # Load from Path instance
+    assert isinstance(
+        yaml_pathlib_Path, Path
+    ), "`yaml_Path` should be a `pathlib.Path` instance"
+    IEA_10_turb = windIO.load_yaml(yaml_pathlib_Path)
+    windIO.validate(
+        IEA_10_turb, "plant/turbine"
+    )  # Testing that the loaded schema is valid
+
+    # Load from string instance
+    yaml_str = str(yaml_pathlib_Path)
+    assert isinstance(yaml_str, str), "`yaml_str` should be a `str` instance"
+    IEA_10_turb = windIO.load_yaml(yaml_str)
+    windIO.validate(
+        IEA_10_turb, "plant/turbine"
+    )  # Testing that the loaded schema is valid
+
+    # As a file-handle
+    with open(yaml_pathlib_Path, "r") as file:
+        IEA_10_turb = windIO.load_yaml(file)
+        windIO.validate(
+            IEA_10_turb, "plant/turbine"
+        )  # Testing that the loaded schema is valid
+
+    # Fail if not a path-like argument
+    with pytest.raises(FileNotFoundError):
+        not_a_filename = "this is not a valid filename"
+        windIO.load_yaml(not_a_filename)
+
+    with pytest.raises(ruamel.yaml.error.YAMLStreamError):
+        windIO.load_yaml(dict())

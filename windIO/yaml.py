@@ -7,6 +7,7 @@ from pathlib import Path
 import numpy as np
 from ruamel.yaml import YAML
 from ruamel.yaml.constructor import SafeConstructor
+import netCDF4 # Importing netCFD to avoid warning: <frozen importlib._bootstrap>:241: RuntimeWarning: numpy.ndarray size changed, may indicate binary incompatibility. Expected 16 from C header, got 96 from PyObject
 import xarray as xr
 
 
@@ -140,13 +141,13 @@ def _get_YAML(
     return yaml_obj
 
 
-def load_yaml(filename: str, loader=None) -> dict:
+def load_yaml(filename: str | Path | os.PathLike, loader=None) -> dict:
     """
     Opens ``filename`` and loads the content into a dictionary with the ``_get_YAML``
     function from ruamel.yaml.YAML.
 
     Args:
-        filename (str): Path or file-handle to the local file to be loaded.
+        filename (str | Path | os.PathLike): Path or file-handle to the local file to be loaded or string path to the file.
         loader (ruamel.yaml.YAML, optional): Defaults to SafeLoader.
 
     Returns:
@@ -154,6 +155,10 @@ def load_yaml(filename: str, loader=None) -> dict:
     """
     if loader is None:
         loader = _get_YAML()
+
+    if isinstance(filename, str):
+        filename = Path(filename)
+
     return loader.load(filename)
 
 def write_yaml(instance : dict, foutput : str) -> None:

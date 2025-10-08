@@ -1,4 +1,5 @@
-input_format_version: 0
+$schema: "http://json-schema.org/draft-07/schema#"
+$id: "windIO/plant/site"
 title: definition of a site
 description: A file used as input or output of a wind plant model (for overall energy
   production estimation)
@@ -33,11 +34,11 @@ properties:
         type: array
         minItems: 1
         items:
-          $ref: "common.yaml#/definitions/coordinates"
+          $ref: "./common.yaml#/definitions/coordinates"
       #~~
       circle:
         title: Circle
-        $ref: "site.yaml#/definitions/circle"
+        $ref: "./site.yaml#/definitions/circle"
   #~
   exclusions:
     title: Exclusions
@@ -59,17 +60,17 @@ properties:
           type: object
           items:
             title: Vertices
-            $ref: "common.yaml#/definitions/coordinates"
+            $ref: "./common.yaml#/definitions/coordinates"
       #~~
       circle:
         title: Circle
-        $ref: "site.yaml#/definitions/circle"
+        $ref: "./site.yaml#/definitions/circle"
 
   #~
   energy_resource:
     description: >-
       TODO
-    $ref: "energy_resource.yaml#"
+    $ref: "./energy_resource.yaml#"
        
   #~
   bathymetry:
@@ -81,7 +82,7 @@ properties:
       - depth
     properties:
       coordinates:
-        $ref: "common.yaml#/definitions/coordinates"
+        $ref: "./common.yaml#/definitions/coordinates"
         description: "An array of x and y coordinates associated with different depths"
       depth:
         type: array
@@ -109,7 +110,7 @@ definitions:
     type: array
     items:
       title: Vertex coordinates
-      $ref: "common.yaml#/definitions/coordinates"
+      $ref: "./common.yaml#/definitions/coordinates"
   #~
   circle:
     title: Circle
@@ -123,7 +124,7 @@ definitions:
       center:
         title: Center
         description: The center coordinate of a circle
-        $ref: "common.yaml#/definitions/coordinate"
+        $ref: "./common.yaml#/definitions/coordinate"
       #~~
       radius:
         title: Radius

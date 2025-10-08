@@ -1,11 +1,11 @@
-input_format_version: 0
+$schema: "http://json-schema.org/draft-07/schema#"
+$id: "windIO/plant/wind_energy_system"
 title: "windIO: plant"
 description: A file used as input or output of a wind farm model
 required:
   - name
   - site
   - wind_farm # Or something referring to the built or "designable" wind energy conversion system
-
 
 # PROPERTIES
 properties:
@@ -16,10 +16,10 @@ properties:
     type: string
   #~
   site:
-    $ref: "site.yaml"
+    $ref: "./site.yaml"
   # #~
   wind_farm:
-    $ref: "wind_farm.yaml"
+    $ref: "./wind_farm.yaml"
   #~
   output:
     $ref: "outputs.yaml"
@@ -474,88 +474,84 @@ properties:
 
 
   optimisation:
-    design_variables:
-      title: List of design variables
-      description: Design variables of the system
-      type: object
-      properties:
-        layout:
-          name:
+    properties:
+      design_variables:
+        title: List of design variables
+        description: Design variables of the system
+        type: object
+        properties:
+          layout:
             title: Array of design variables
-          $ref: "wind_farm/properties/layouts"
-        turbine_types:
-          name:
+            $ref: "./wind_farm/properties/layouts"
+          turbine_types:
             title: Wind turbine types installed
-          $ref: "wind_farm/properties/turbines"
-        number_turbines:
-          name:
+            $ref: "./wind_farm/properties/turbines"
+          number_turbines:
             title: Number of turbines installed
-        turbine_hub_heights:
-          name:
+          turbine_hub_heights:
             title: Hub heights of installed turbines
 
-    method:
-      title: Optimisation method
-      description: Optimisation method used for layout design
-      type: object
-      properties:
-        name:
-          title: Optimisation method name
-          type: string
-    constraints:
-      title: Optimisation constraints functions
-      description: List of constraint functions
-      type: object
-      properties:
-        minimum_spacing:
-          title: Minimum inter-turbine spacing
-          oneOf:
-            - ellipse:
-              title: Ellipse min. spacing constraint
-              properties:
-                major_axis:
-                  title: Spacing along the ellipse major axis
-                  type: number
-                minor_axis:
-                  title: Spacing along the ellipse minor axis
-                  type: number
-                orientation:
-                  title: Orientation angle of the ellipse
-                  type: number
-            - circle:
-              title: Circular min. spacing constraint
-              properties:
-                radius:
-                  title: Uniform spacing or radius of circle
-                  type: number
-        area_constraints:
-          title: Parcels and exclusion zones
-          parcels:
-            title: List of parcel polygons
-            $ref: "site.yaml#/properties/boundaries"  # Or refer to subset of user defined polygons in /site/
-          exclusion_zones:
-            title: List of exclusion zone polygons
-            $ref: "site.yaml#/properties/exclusions" # Or refer to subset of user defined polygons in /site/
+      method:
+        title: Optimisation method
+        description: Optimisation method used for layout design
+        type: object
+        properties:
+          name:
+            title: Optimisation method name
+            type: string
+      constraints:
+        title: Optimisation constraints functions
+        description: List of constraint functions
+        type: object
+        properties:
+          minimum_spacing:
+            title: Minimum inter-turbine spacing
+            oneOf:
+              - title: Ellipse min. spacing constraint
+                properties:
+                  major_axis:
+                    title: Spacing along the ellipse major axis
+                    type: number
+                  minor_axis:
+                    title: Spacing along the ellipse minor axis
+                    type: number
+                  orientation:
+                    title: Orientation angle of the ellipse
+                    type: number
+              - title: Circular min. spacing constraint
+                properties:
+                  radius:
+                    title: Uniform spacing or radius of circle
+                    type: number
+          area_constraints:
+            title: Parcels and exclusion zones
+            properties:
+              parcels:
+                title: List of parcel polygons
+                $ref: "./site.yaml#/properties/boundaries" # Or refer to subset of user defined polygons in /site/
+              exclusion_zones:
+                title: List of exclusion zone polygons
+                $ref: "./site.yaml#/properties/exclusions" # Or refer to subset of user defined polygons in /site/
 
-    initial_design:
-      properties:
-        layout:
-          title: Initial layout
-          $ref: "wind_farm.yaml#/definition/layout"
-        turbine_types:  # Examples for future development
-          title: Initial turbine types
-        number_turbines:
-          title: Initial number turbines
-        turbine_hub_heights:
-          title: Initial turbine hub heights
-    final_design:
-      properties:
-        layout:
-          title: Final layout
-          $ref: "wind_farm.yaml#/definition/layout"
-        turbine_types:  # Examples for future development
-          title: Final turbine types
-        number_turbines:
-          title: Final number turbines
-        turbine_hub_heights:
-          title: Final turbine hub heights
+      initial_design:
+        properties:
+          layout:
+            title: Initial layout
+            $ref: "./wind_farm.yaml#/definition/layout"
+          turbine_types: # Examples for future development
+            title: Initial turbine types
+          number_turbines:
+            title: Initial number turbines
+          turbine_hub_heights:
+            title: Initial turbine hub heights
+      final_design:
+        properties:
+          layout:
+            title: Final layout
+            $ref: "./wind_farm.yaml#/definition/layout"
+          turbine_types: # Examples for future development
+            title: Final turbine types
+          number_turbines:
+            title: Final number turbines
+          turbine_hub_heights:
+            title: Final turbine hub heights

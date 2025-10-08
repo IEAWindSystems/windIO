@@ -1,5 +1,6 @@
 # Draft schema definition for energy resource
-input_format_version: 0
+$schema: "http://json-schema.org/draft-07/schema#"
+$id: "windIO/plant/energy_resource"
 title: Energy resource
 type: object
 description: >-
@@ -10,7 +11,6 @@ description: >-
 required:
   - name
   - wind_resource
-
 
 # PROPERTIES
 properties:
@@ -23,127 +23,127 @@ properties:
   wind_resource:
     title: Wind resource
     type: object
-    decription: Resource where data optionally depend on wind_speed, wind_direction and/or position
+    description: Resource where data optionally depend on wind_speed, wind_direction and/or position
     oneOf:
-        - required: 
+      - required:
           - probability
-        - required:
+      - required:
           - weibull_a
           - weibull_k
           - sector_probability
-        - required:
+      - required:
           - time
           - wind_speed
           - wind_direction
     properties:
         time: 
             description: Timestamps for the data points
-            $ref: "common.yaml#/definitions/multi_dimensional_coordinate"
+            $ref: "./common.yaml#/definitions/multi_dimensional_coordinate"
         wind_direction:
             title: Wind directions
             description: Wind directions in degrees, [0,360]
             oneOf:
-              - $ref: "common.yaml#/definitions/multi_dimensional_data"
-              - $ref: "common.yaml#/definitions/multi_dimensional_coordinate"
+              - $ref: "./common.yaml#/definitions/multi_dimensional_data"
+              - $ref: "./common.yaml#/definitions/multi_dimensional_coordinate"
         wind_speed:
             description: Wind speeds in m/s
             oneOf:
-              - $ref: "common.yaml#/definitions/multi_dimensional_data"
-              - $ref: "common.yaml#/definitions/multi_dimensional_coordinate" 
+              - $ref: "./common.yaml#/definitions/multi_dimensional_data"
+              - $ref: "./common.yaml#/definitions/multi_dimensional_coordinate" 
         wind_turbine:
             title: Wind turbine IDs
             description: Wind turbine id
-            $ref: "common.yaml#/definitions/multi_dimensional_coordinate"
+            $ref: "./common.yaml#/definitions/multi_dimensional_coordinate"
         x:
             title: West-East position
             oneOf:
-              - $ref: "common.yaml#/definitions/multi_dimensional_data"
-              - $ref: "common.yaml#/definitions/multi_dimensional_coordinate"
+              - $ref: "./common.yaml#/definitions/multi_dimensional_data"
+              - $ref: "./common.yaml#/definitions/multi_dimensional_coordinate"
         y:
             title: South-North position
             oneOf:
-              - $ref: "common.yaml#/definitions/multi_dimensional_data"
-              - $ref: "common.yaml#/definitions/multi_dimensional_coordinate"
+              - $ref: "./common.yaml#/definitions/multi_dimensional_data"
+              - $ref: "./common.yaml#/definitions/multi_dimensional_coordinate"
         height:
             title: Reference height
             oneOf:
-              - $ref: "common.yaml#/definitions/multi_dimensional_data"
-              - $ref: "common.yaml#/definitions/multi_dimensional_coordinate" 
+              - $ref: "./common.yaml#/definitions/multi_dimensional_data"
+              - $ref: "./common.yaml#/definitions/multi_dimensional_coordinate" 
         operating:
             description: Flag describing which turbines are operating
             $ref: "common.yaml#/definitions/multi_dimensional_data"
         probability:
             description: Probability of flow cases [0,1]
-            $ref: "common.yaml#/definitions/multi_dimensional_data"
+            $ref: "./common.yaml#/definitions/multi_dimensional_data"
         weibull_a:
             title: Weibull scale
-            $ref: "common.yaml#/definitions/multi_dimensional_data"
+            $ref: "./common.yaml#/definitions/multi_dimensional_data"
         weibull_k:
             title: Weibull shape
-            $ref: "common.yaml#/definitions/multi_dimensional_data"
+            $ref: "./common.yaml#/definitions/multi_dimensional_data"
         sector_probability:
             title: probability of wind directions
             description: Probability of wind sector [0,1]
-            $ref: "common.yaml#/definitions/multi_dimensional_data"
+            $ref: "./common.yaml#/definitions/multi_dimensional_data"
         turbulence_intensity:
             title: Turbulence intensity
-            $ref: "common.yaml#/definitions/multi_dimensional_data"
+            $ref: "./common.yaml#/definitions/multi_dimensional_data"
         reference_height:
             title: Reference height
             type: number
         shear:
             title: Shear
-            $ref: "common.yaml#/definitions/shear"
+            $ref: "./common.yaml#/definitions/shear"
         LMO:
-            title: Monin–Obukhov length (m)
-            $ref: "common.yaml#/definitions/multi_dimensional_data"
+            title: Monin-Obukhov length (m)
+            $ref: "./common.yaml#/definitions/multi_dimensional_data"
         z0:
             title: Roughness height (m)
-            $ref: "common.yaml#/definitions/multi_dimensional_data"
+            $ref: "./common.yaml#/definitions/multi_dimensional_data"
         k:
             title: Turbulent kinetic energy
-            $ref: "common.yaml#/definitions/multi_dimensional_data"
+            $ref: "./common.yaml#/definitions/multi_dimensional_data"
         epsilon:
             title: Turbulent dissipation
-            $ref: "common.yaml#/definitions/multi_dimensional_data"
+            $ref: "./common.yaml#/definitions/multi_dimensional_data"
         potential_temperature:
             title: Potential Temperature (K)
-            $ref: "common.yaml#/definitions/multi_dimensional_data"
+            $ref: "./common.yaml#/definitions/multi_dimensional_data"
         friction_velocity:
             title: Friction velocity (m/s)
-            $ref: "common.yaml#/definitions/multi_dimensional_data"
+            $ref: "./common.yaml#/definitions/multi_dimensional_data"
         ground_temperature:
             title: Ground Temperature (K)
             description: Temperature of the ground in Kelvin
-            $ref: "common.yaml#/definitions/multi_dimensional_data"
+            $ref: "./common.yaml#/definitions/multi_dimensional_data"
         stability:
           title: Stability of the atmosphere
           description: Roughness length in meters
-          $ref: "common.yaml#/definitions/multi_dimensional_data"
+          $ref: "./common.yaml#/definitions/multi_dimensional_data"
         ABL_height:
             title: atmoshpheric boundary layer height
-            $ref: "common.yaml#/definitions/multi_dimensional_data"
+            $ref: "./common.yaml#/definitions/multi_dimensional_data"
         capping_inversion_thickness:
             title: Capping inversion thickness in units of meters
-            $ref: "common.yaml#/definitions/multi_dimensional_data"
+            $ref: "./common.yaml#/definitions/multi_dimensional_data"
         capping_inversion_strength:
             title: capping inversion strength in units of Kelvin
-            $ref: "common.yaml#/definitions/multi_dimensional_data"
+            $ref: "./common.yaml#/definitions/multi_dimensional_data"
         capping_inversion_height:
             title: capping inversion height in units of meters
-            $ref: "common.yaml#/definitions/multi_dimensional_data"
+            $ref: "./common.yaml#/definitions/multi_dimensional_data"
         lapse_rate:
             title: lapse rate in units of K/m
-            $ref: "common.yaml#/definitions/multi_dimensional_data"
+            $ref: "./common.yaml#/definitions/multi_dimensional_data"
         fc:
             title: Coriolis Parameter
-            $ref: "common.yaml#/definitions/multi_dimensional_data"
+            $ref: "./common.yaml#/definitions/multi_dimensional_data"
         tau_x:
             title: Sheer stress x
-            $ref: "common.yaml#/definitions/multi_dimensional_data"
+            $ref: "./common.yaml#/definitions/multi_dimensional_data"
         tau_y:
             title: Sheer stress y
-            $ref: "common.yaml#/definitions/multi_dimensional_data"
+            $ref: "./common.yaml#/definitions/multi_dimensional_data"
 
 
 # DEFINITIONS
