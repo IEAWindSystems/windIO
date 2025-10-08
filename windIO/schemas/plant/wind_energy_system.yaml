@@ -22,9 +22,10 @@ properties:
     $ref: "./wind_farm.yaml"
   #~
   simulation_output:
-    $ref: "simulation_outputs.yaml"
+    $ref: "./simulation_outputs.yaml"
+  #~
   scada_data:
-    $ref: "scada_data.yaml"
+    $ref: "./scada_data.yaml"
   #~
   attributes:
     title: Attributes
