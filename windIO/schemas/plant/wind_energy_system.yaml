@@ -21,8 +21,8 @@ properties:
   wind_farm:
     $ref: "./wind_farm.yaml"
   #~
-  output:
-    $ref: "outputs.yaml"
+  simulation_output:
+    $ref: "simulation_outputs.yaml"
   scada_data:
     $ref: "scada_data.yaml"
   #~
