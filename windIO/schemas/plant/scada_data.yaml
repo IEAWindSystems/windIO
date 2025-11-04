@@ -18,7 +18,7 @@ properties:
     type: object
     description: >
       The turbine_data table outputs including time, wind speed (ws), wind direction (wd),
-      power, effective wind speed, etc.
+      power, rotor effective velocity, etc.
     additionalProperties: false
     anyOf:
       - required:
@@ -37,10 +37,6 @@ properties:
       power:
         title: Power
         description: Power output in Watts
-        $ref: "common.yaml#/definitions/multi_dimensional_data"
-      effective_wind_speed:
-        title: Effective Wind Speed in m/s
-        description: Effective wind speed
         $ref: "common.yaml#/definitions/multi_dimensional_data"
       wind_direction:
         title: Wind Direction in degrees
