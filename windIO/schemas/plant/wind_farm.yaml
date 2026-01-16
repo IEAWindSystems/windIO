@@ -27,6 +27,17 @@ properties:
           coordinates:
             description: List of turbine coordinates for this layout
             $ref: "./common.yaml#/definitions/coordinates"
+          turbine_types:
+            description: (Optional) List of turbine types corresponding to turbine positions.
+            type: array
+            items:
+              type: integer
+          turbine_identifiers:
+            description: List of turbine id/tags
+            type: array
+            items:
+              type: string
+
       - type: array
         items:
           type: object
@@ -41,12 +52,11 @@ properties:
               type: array
               items:
                 type: integer
-
-  turbine_identifiers:
-    description: List of turbine id/tags
-    type: array
-    items:
-      type: string
+            turbine_identifiers:
+              description: List of turbine id/tags
+              type: array
+              items:
+                type: string
 
   turbines:
     description: (Optional) The full turbine definition for the entire wind farm

@@ -47,6 +47,16 @@ definitions:
         description: South-North coordinates
         type: array
         units: m
+      z:
+        title: (Optional) Z coordinate
+        description: Height coordinate
+        type: array
+        units: m
+      crs:
+        title: (Optional) Coordinate reference system
+        description: Coordinate reference system described as a PROJ string
+        type: array
+
   data_types:
     decimal:
       type: number
