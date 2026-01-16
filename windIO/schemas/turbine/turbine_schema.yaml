@@ -2618,112 +2618,144 @@ properties:
         # additionalProperties: True
         type: object
         description: Dictionary reporting the data describing the wind turbine controller
-        required:
-            - supervisory
-            - torque
-            - pitch
+        # required:  # TODO: figure out what should be required
+        #     - torque
+        #     - pitch
         properties:
-            supervisory:
+            min_rotor_speed:
+                type: number
+                description: Minimum allowed rotor speed by the controller
+                units: rpm
+                minimum: 0
+            rated_rotor_speed:
+                type: number
+                description: Rated rotor speed, regulated by the controller.  rated_power * efficiencies / rated_rotor_speed = rated torque.
+                units: rpm
+                minimum: 0
+            max_rotor_speed:
+                type: number
+                description: Maximum allowed rotor speed. Speeds greater than this will trigger a shutdown. Should be ~5-20% greater than rated_rotor_speed.
+                units: rpm
+                minimum: 0
+            max_gen_torque: 
+                type: number
+                description: Maximum allowed generator torque.  Should be ~10-20% higher than rated torque.  Used in constant power applications.
+                units: kNm
+                minimum: 0
+            max_torque_rate:
+                type: number
+                description: Maximum torque rate of the wind turbine generator.
+                units: N*m/s
+                minimum: 0
+            fine_pitch:
+                type: number
+                description: Constant pitch angle for optimal power production below rated (usually corresponding to a single, optimal tip speed ratio).
+                units: deg
+                minimum: -90
+                maximum: 90
+            min_pitch_table:
                 type: object
-                required:
-                    - Vin
-                    - Vout
-                    - maxTS
+                description: Minimum pitch vs. wind speed table used for optimizing power production and/or limiting rotor thrust
                 properties:
-                    Vin:
-                        type: number
-                        description: Cut-in wind speed of the wind turbine.
-                        units: m/s
-                        minimum: 0
-                        maximum: 10
-                    Vout:
-                        type: number
-                        description: Cut-out wind speed of the wind turbine.
-                        units: m/s
-                        minimum: 0
-                        maximum: 50
-                    maxTS:
-                        type: number
-                        description: Maximum allowable blade tip speed.
-                        units: m/s
-                        minimum: 60
-                        maximum: 120
-            pitch:
-                # additionalProperties: True
-                type: object
-                required:
-                    - max_pitch_rate
-                properties:
+                    wind_speed:
+                        $ref: "#/definitions/distributed_data/velocity"
                     min_pitch:
-                        type: number
-                        description: Minimum pitch angle, where the default is 0 deg
-                        units: deg
-                        minimum: -10.0
-                        maximum: 90.
-                        default: 0.0
-                    max_pitch:
-                        type: number
-                        description: Maximum pitch angle, where the default is 90 deg
-                        units: deg
-                        minimum: 10.
-                        maximum: 120.
-                        default: 90.
-                    max_pitch_rate:
-                        type: number
-                        description: Maximum pitch rate of the rotor blades.
-                        units: deg/s
-                        minimum: 0
-                        maximum: 30.
-                    ps_percent:
-                        type: number
-                        description: Nondimensional factor shaving peak thrust. 1 means no peak thrust shaving
-                        minimum: 0
-                        default: 0.8
-                        maximum: 1.
-            torque:
-                # additionalProperties: True
+                        $ref: "#/definitions/distributed_data/angle"
+            min_pitch_limit:
+                type: number
+                description: Constant minimum pitch angle (hardware) limit.  The pitch angle cannot be less than this value.
+                units: deg
+                minimum: -90
+                maximum: 90
+            max_pitch_limit:
+                type: number
+                description: Maximum pitch angle using during parked or idling.  Can be a hardware or software limit.
+                units: deg
+                minimum: -90
+                maximum: 90
+            max_pitch_rate:
+                type: number
+                description: Maximum pitch rate of the rotor blades.
+                units: deg/s
+                minimum: 0
+            lpf_frequency:
+                type: number
+                description: Low pass filter frequency of generator/rotor speed measurement for the controller.
+                units: rad/s
+                minimum: 0
+            lpf_damping:
+                type: number
+                description: Damping ratio of the low pass filter for generator/rotor speed measurement.
+                units: dimensionless
+                minimum: 0
+            region2_k:
+                type: number
+                description: Optimal gain for below rated torque control (k * rotor_speed^2 = generator_torque).
+                units: N*m/(rpm)^2 
+                minimum: 0
+            gen_torque_kp:
+                type: number
+                description: Gain from rotor speed (rpm) to generator torque (N*m) in a proportional controller.
+                units: N*m/rpm 
+            gen_torque_ki:
+                type: number
+                description: Gain from rotor speed (rpm) to generator torque (N*m) in an integratal control element. 
+                units: N*m/(rpm*s)
+            pitch_kp:
                 type: object
-                required:
-                    - tsr
-                    - VS_minspd
+                description: Gain schedule (gain vs. pitch) from rotor speed (rpm) to blade pitch (deg) in a proportional controller.
                 properties:
-                    max_torque_rate:
-                        type: number
-                        description: Maximum torque rate of the wind turbine generator.
-                        units: N*m/s
-                        minimum: 1000
-                        maximum: 100000000
-                    tsr:
-                        type: number
-                        description: Rated tip speed ratio of the wind turbine. As default, it is maintained constant in region II.
-                        units: dimensionless
-                        minimum: 0
-                        maximum: 15
-                    VS_minspd:
-                        type: number
-                        description: Minimum rotor speed.
-                        units: rpm
-                        minimum: 0
-                        maximum: 20.
-                    VS_maxspd:
-                        type: number
-                        description: Maximum rotor speed.
-                        units: rpm
-                        minimum: 0
-                        default: 100.
-            yaw:
+                    pitch_angle:
+                        $ref: "#/definitions/distributed_data/angle"
+                    kp:
+                        type: array
+                        items:
+                            type: number
+                        units: deg/rpm 
+            pitch_ki:
                 type: object
-                description: Yaw system data.
-                required:
-                    - yaw_rate
+                description: Gain schedule (gain vs. pitch) from rotor speed (rpm) to blade pitch (deg) in an integral control element.
                 properties:
-                    yaw_rate:
-                        type: number
-                        description: Maximum yaw rate of the wind turbine.
-                        units: deg/s
-                        minimum: 0
-                        maximum: 30.
-                        default: 1.
+                    pitch_angle:
+                        $ref: "#/definitions/distributed_data/angle"
+                    ki:
+                        type: array
+                        items:
+                            type: number
+                        units: deg/rpm 
+            constant_power:
+                type: number
+                description: Flag for using consant torque (0) or constant power (1) torque control above rated.
+                enum: [0,1]
+            # gen_efficiency:  # TODO: this one may be covered by other entries in windIO (efficiency, rpm_efficiency)
+            #     type: number
+            #     description: Combined efficiency of the generator, gearbox, and power electronics.  
+            #     minimum: 0
+            gen_actuator_frequency:
+                type: number
+                description: Natural frequency of the generator torque actuator model 2nd order system.
+                units: rad/s
+                minimum: 0
+            gen_actuator_damping:
+                type: number
+                description: Damping ratio of the generator torque actuator model 2nd order system.
+                units: dimensionless
+                minimum: 0
+            pitch_actuator_frequency:
+                type: number
+                description: Natural frequency of the pitch actuator model 2nd order system.
+                units: rad/s
+                minimum: 0
+            pitch_actuator_damping:
+                type: number
+                description: Damping ratio of the pitch actuator model 2nd order system.
+                units: dimensionless
+                minimum: 0
+            yaw_rate:
+                type: number
+                description: Constant rate used during yawing maneuvers.
+                units: deg/s
+                minimum: 0
     outputs:
         type: object
         description: Modal response and loads and performance metrics describing the turbine
@@ -2973,6 +3005,14 @@ definitions:
                     units: m
                     minItems: 2
             minItems: 2
+        velocity:
+            type: array
+            default: [0.0, 0.0]
+            items:
+                type: number
+                units: m/s
+                minItems: 2
+                uniqueItems: false
         force:
             type: array
             description: Loading described along a beam, expressed in N per meter
@@ -3331,160 +3371,3 @@ definitions:
                     minItems: 3
                     maxItems: 3
                     uniqueItems: false
-    filter:
-        type: object
-        description: Linear filter, could be a LPF, HPF, NF, INF, or user_defined
-        required:
-            - filt_type
-            #- filt_def
-        properties:
-            filt_type:
-                type: string
-                description: Type of filter used, could be a LPF, HPF, NF, INF, or user_defined
-                enum:
-                    - LPF
-                    - HPF
-                    - NF
-                    - INF
-                    - user_defined
-            # Seems unfinished - kenloen
-            #filt_def:
-            #LPF:
-            #    type: object
-            #    description: Low pass filter
-            #    required:
-            #        - omega
-            #        - order
-            #    optional:
-            #        - damping
-            #HPF:
-            #NF:
-            #INF:
-            user_defined:
-                type: object
-                description: User defined filter
-                required:
-                    - num
-                    - den
-                optional:
-                    - dt
-                properties:
-                    num:
-                        type: array
-                        description: Numerator coefficients of linear filter
-                        items:
-                            type: number
-                            units: dimensionless
-                            minItems: 0
-                            uniqueItems: false
-                    den:
-                        type: array
-                        description: Numerator coefficients of linear filter
-                        items:
-                            type: number
-                            units: dimensionless
-                            minItems: 1
-                            uniqueItems: false
-                    dt:
-                        type: number
-                        description: Sampling rate of filter, -1 for continuous   # DZ: will probably convert all to dt of simulation... not sure how to handle this
-                        minimum: -1
-
-    state_space:
-        type: object
-        description: Linear state space model
-        required:
-            - ss_A
-            - ss_B
-            - ss_C
-            - ss_D
-        properties:
-            ss_A:
-                type: array
-                description: A matrix of linear state space model, flattened with n_states^2 elements
-                items:
-                    type: number
-                    minItems: 1
-                    uniqueItems: false
-            ss_B:
-                type: array
-                description: B matrix of linear state space model, flattened with n_states x n_inputs elements
-                items:
-                    type: number
-                    minItems: 1
-                    uniqueItems: false
-            ss_C:
-                type: array
-                description: C matrix of linear state space model, flattened with n_outputs x n_states elements
-                items:
-                    type: number
-                    minItems: 1
-                    uniqueItems: false
-            ss_D:
-                type: array
-                description: D matrix of linear state space model, flattened with n_outputs x n_inputs elements
-                items:
-                    type: number
-                    minItems: 1
-                    uniqueItems: false
-            # DZ: might be a good idea to check the number of states
-            ss_dt:
-                type: number
-                description: Sampling rate of filter, -1 for continuous   # DZ: will probably convert all to dt of simulation... not sure how to handle this
-                minimum: -1
-
-    timeseries:
-        type: object
-        description: Array of time, value pairs  # DZ: can we check that the number of elements are equal?
-        required:
-            - time
-            - value
-        optional:
-            - filename
-        properties:
-            time:
-                type: array
-                description: Time in timeseries
-                items:
-                    type: number
-                    units: s
-                    minItems: 1
-                    uniqueItems: true   # probably?
-            value:
-                type: array
-                description: Value in timeseries
-                items:
-                    type: number
-                    units: dimensionless  #any
-                    minItems: 1
-                    uniqueItems: false
-                    # can we check that number of elements are equal?
-            filename:
-                type: string
-                description: Name of file with timeseries data
-
-    activator:
-        type: object
-        description: Gain used to enable/disable control elements, can be used partially
-        required:
-            - wind_speeds
-            - act_gain
-        properties:
-            wind_speeds:
-                type: array
-                description: Array of wind speed breakpoints for activators
-                items:
-                    type: number
-                    units: m/s
-                    minItems: 1
-                    uniqueItems: true
-            act_gain:
-                type: array
-                description: Array of gains from 0 to 1, enabling/disabling control element
-                items:
-                    type: number
-                    units: dimensionless
-                    minItems: 1
-                    uniqueItems: false
-                    minimum: 0
-                    maximum: 1

@@ -768,6 +768,17 @@ class v1p0_to_v2p0:
         if "shutdown" in dict_v2p0["control"]:
             dict_v2p0["control"].pop("shutdown")
 
+        # TODO: not sure what to do with these at the moment, removing for now
+        if "supervisory" in dict_v2p0["control"]:
+            dict_v2p0["control"].pop("supervisory")
+        if "torque" in dict_v2p0["control"]:
+            dict_v2p0["control"].pop("torque")
+        if "pitch" in dict_v2p0["control"]:
+            dict_v2p0["control"].pop("pitch")
+        if "shutdown" in dict_v2p0["control"]:
+            dict_v2p0["control"].pop("shutdown")
+
+
         return dict_v2p0
 
     
