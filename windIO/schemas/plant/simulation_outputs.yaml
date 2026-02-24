@@ -129,3 +129,7 @@ properties:
         title: Thrust force in N
         description: Thrust force in N
         $ref: "./common.yaml#/definitions/multi_dimensional_data"
+      turbulence_intensity:
+        title: Turbulence Intensity
+        description: Turbulence intensity at the turbine location
+        $ref: "./common.yaml#/definitions/multi_dimensional_data"
