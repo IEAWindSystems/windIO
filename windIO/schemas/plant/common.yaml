@@ -55,7 +55,7 @@ definitions:
       crs:
         title: (Optional) Coordinate reference system
         description: Coordinate reference system described as a PROJ string
-        type: array
+        type: string
 
   data_types:
     decimal:
