@@ -91,6 +91,18 @@ properties:
                 units: yr
                 minimum: 0
                 default: 25.0
+            cut_in_wind_speed:
+                type: number
+                description: Cut-in wind speed, i.e. the minimum wind speed at which the turbine starts producing power.
+                units: m/s
+                minimum: 0
+                default: 3.0
+            cut_out_wind_speed:
+                type: number
+                description: Cut-out wind speed, i.e. the maximum wind speed at which the turbine produces power.
+                units: m/s
+                minimum: 0
+                default: 25.0
     components:
         type: object
         description: Nested dictionary structure of components describing the wind turbine assembly
