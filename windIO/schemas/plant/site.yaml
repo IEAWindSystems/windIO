@@ -74,22 +74,21 @@ properties:
        
   #~
   bathymetry:
-    title: Bathymetry
-    description: x, y, and depth field of water depth
     type: object
     required:
-      - coordinates
+      - x
+      - y
       - depth
     properties:
-      coordinates:
-        $ref: "./common.yaml#/definitions/coordinates"
-        description: "An array of x and y coordinates associated with different depths"
+      x:
+        $ref: "./common.yaml#/definitions/multi_dimensional_coordinate"
+        description: "West-East coordinate axis"
+      y:
+        $ref: "./common.yaml#/definitions/multi_dimensional_coordinate"
+        description: "South-North coordinate axis"
       depth:
-        type: array
-        items:
-          type: number
-          units: m
-          description: "An array of depth values"
+        $ref: "./common.yaml#/definitions/multi_dimensional_data"
+        description: "2D depth field indexed by (y, x)"
 
   elevation:
     title: Elevation
