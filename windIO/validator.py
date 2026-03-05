@@ -11,16 +11,20 @@ from .yaml import load_yaml
 from .schemas import schemaPath, schema_validation_error_formatter
 
 
-def retrieve_yaml(uri: str):
-    if not uri.endswith(".yaml"):
-        raise NoSuchResource(ref=uri)
-    uri = uri.removeprefix("windIO/")
-    path = schemaPath / Path(uri)
-    contents = load_yaml(path)
-    return Resource.from_contents(contents)
+def _make_retrieve(restrictive=False):
+    def retrieve(uri: str):
+        if not uri.endswith(".yaml"):
+            raise NoSuchResource(ref=uri)
+        uri = uri.removeprefix("windIO/")
+        path = schemaPath / Path(uri)
+        contents = load_yaml(path)
+        if restrictive:
+            _enforce_no_additional_properties(contents)
+        return Resource.from_contents(contents)
+    return retrieve
 
 
-registry = Registry(retrieve=retrieve_yaml)
+registry = Registry(retrieve=_make_retrieve())
 
 
 def _enforce_no_additional_properties(schema):
@@ -93,11 +97,14 @@ def validate(
     schema = load_yaml(schema_file)
     if restrictive:
         schema = _enforce_no_additional_properties(schema)
+        reg = Registry(retrieve=_make_retrieve(restrictive=True))
+    else:
+        reg = registry
 
     if defaults:
-        _jsonschema_validate_modified(data, schema, cls = DefaultValidatingDraft7Validator, registry=registry)
+        _jsonschema_validate_modified(data, schema, cls = DefaultValidatingDraft7Validator, registry=reg)
     else:
-        _jsonschema_validate_modified(data, schema, registry=registry)
+        _jsonschema_validate_modified(data, schema, registry=reg)
 
     return data
 
