@@ -219,5 +219,31 @@ def test_validation_timeseries():
         schema_type="plant/energy_resource",
     )
 
+def test_restrictive_rejects_additional_properties_in_ref_schemas():
+    """Test that restrictive validation catches additional properties in $ref-resolved schemas.
+
+    The site schema is loaded via $ref from wind_energy_system.yaml.
+    Without the fix to propagate enforcement through the registry,
+    extra properties in $ref-resolved schemas would pass silently.
+    """
+    plant_reference_path = Path(windIO.plant_ex.__file__).parent
+    data = windIO.load_yaml(
+        plant_reference_path / "wind_energy_system/IEA37_case_study_1_2_wind_energy_system.yaml"
+    )
+
+    # Inject an extra property into site, which is resolved via $ref
+    data["site"]["not_in_schema"] = "should be rejected"
+
+    # restrictive=True (default) must reject it
+    with pytest.raises(
+        jsonschema.exceptions.ValidationError,
+        match="Additional properties are not allowed.*'not_in_schema'",
+    ):
+        windIO.validate(data, "plant/wind_energy_system", restrictive=True)
+
+    # restrictive=False must allow it
+    windIO.validate(data, "plant/wind_energy_system", restrictive=False)
+
+
 if __name__ == "__main__":
     test_validate_raise()
