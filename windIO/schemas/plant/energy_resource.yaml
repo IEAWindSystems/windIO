@@ -100,7 +100,10 @@ properties:
             properties:
                 alpha:
                     title: Alpha
-                    type: number
+                    description: Shear exponent; scalar or dependent on wind_direction
+                    oneOf:
+                      - type: number
+                      - $ref: "./common.yaml#/definitions/multi_dimensional_data"
                 h_ref:
                     title: Shear ref height
                     type: number
