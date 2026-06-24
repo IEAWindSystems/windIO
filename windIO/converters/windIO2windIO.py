@@ -486,6 +486,26 @@ class v1p0_to_v2p0:
         dict_v2p0["components"]["hub"]["cd"] = dict_v2p0["components"]["hub"]["drag_coefficient"]
         dict_v2p0["components"]["hub"].pop("drag_coefficient")
 
+        # Hub rigid-body mass properties. v1 stores these on
+        # hub.elastic_properties_mb (system_mass / system_inertia /
+        # system_center_mass, hub-aligned frame with x along the shaft); v2 uses
+        # a `rigid_body` (mass, inertia[6], location[3]) in the same frame.
+        if "elastic_properties_mb" in dict_v2p0["components"]["hub"]:
+            hub_epm = dict_v2p0["components"]["hub"].pop("elastic_properties_mb")
+            hub_ep = {}
+            if "system_mass" in hub_epm:
+                hub_ep["mass"] = hub_epm["system_mass"]
+            inertia = hub_epm.get("system_inertia")
+            if inertia is not None:
+                inertia = list(inertia)
+                if len(inertia) < 6:
+                    inertia = inertia + [0.0] * (6 - len(inertia))
+                hub_ep["inertia"] = inertia
+            if "system_center_mass" in hub_epm:
+                hub_ep["location"] = hub_epm["system_center_mass"]
+            if hub_ep:
+                dict_v2p0["components"]["hub"]["elastic_properties"] = hub_ep
+
         # Split nacelle components
         v1p0_dt = deepcopy(dict_v2p0["components"]["nacelle"]["drivetrain"])
         v1p0_nac = deepcopy(dict_v2p0["components"]["nacelle"])
@@ -504,7 +524,7 @@ class v1p0_to_v2p0:
             dict_v2p0["components"]["drivetrain"]["outer_shape"]["overhang"] = v1p0_dt["overhang"]
         if "drag_coefficient" in v1p0_dt:
             dict_v2p0["components"]["drivetrain"]["outer_shape"]["cd"] = v1p0_dt["drag_coefficient"]
-        
+
         dict_v2p0["components"]["drivetrain"]["gearbox"] = {}
         if "gear_ratio" in v1p0_dt:
             dict_v2p0["components"]["drivetrain"]["gearbox"]["gear_ratio"] =  v1p0_dt["gear_ratio"]
@@ -592,6 +612,34 @@ class v1p0_to_v2p0:
             dict_v2p0["components"]["drivetrain"]["generator"]["mass"] = v1p0_dt["generator_mass_user"]
         if "rpm_efficiency_user" in v1p0_dt:
             dict_v2p0["components"]["drivetrain"]["generator"]["rpm_efficiency"] = v1p0_dt["rpm_efficiency_user"]
+
+        # Rigid-body mass properties. In v1 these live on
+        # nacelle.drivetrain.elastic_properties_mb (system_mass / system_inertia
+        # [/ system_inertia_tt] / system_center_mass + yaw_mass). v2 splits them
+        # into a `rigid_body` (mass, inertia[6], location[3]) on the drivetrain
+        # (tower-top coordinate system) and a separate `yaw` component.
+        if "elastic_properties_mb" in v1p0_dt:
+            epm = v1p0_dt["elastic_properties_mb"]
+            dt_ep = {}
+            if "system_mass" in epm:
+                dt_ep["mass"] = epm["system_mass"]
+            # Prefer the tower-top-frame inertia (matches the v2 drivetrain
+            # frame); fall back to system_inertia. Pad the diagonal-only (len 3)
+            # form to the full 6-element [Ixx, Iyy, Izz, Ixy, Ixz, Iyz] array.
+            inertia = epm.get("system_inertia_tt", epm.get("system_inertia"))
+            if inertia is not None:
+                inertia = list(inertia)
+                if len(inertia) < 6:
+                    inertia = inertia + [0.0] * (6 - len(inertia))
+                dt_ep["inertia"] = inertia
+            if "system_center_mass" in epm:
+                dt_ep["location"] = epm["system_center_mass"]
+            if dt_ep:
+                dict_v2p0["components"]["drivetrain"]["elastic_properties"] = dt_ep
+            if "yaw_mass" in epm:
+                dict_v2p0["components"]["yaw"] = {
+                    "elastic_properties": {"mass": epm["yaw_mass"]}
+                }
 
         dict_v2p0["components"].pop("nacelle")
 
@@ -731,33 +779,43 @@ class v1p0_to_v2p0:
         return dict_v2p0
     
     def convert_controls(self, dict_v2p0):
+        # Map the v1 nested control (supervisory/pitch/torque/yaw) onto the flat
+        # 2.x control block, converting rad -> deg and rad/s -> rpm. Only the
+        # turbine-level fields available in v1 are emitted; controller-tuning
+        # fields (ROSCO-style gains, filter/actuator settings, gain-schedule
+        # tables) are not present in v1 and are therefore omitted.
+        v1_control = dict_v2p0["control"]
+        pitch = v1_control.get("pitch", {})
+        torque = v1_control.get("torque", {})
+        supervisory = v1_control.get("supervisory", {})
+        yaw = v1_control.get("yaw", {})
 
-        # Controls, update a few fields from rad to deg and from rad/s to rpm
-        min_pitch_rad = dict_v2p0["control"]["pitch"]["min_pitch"]
-        dict_v2p0["control"]["pitch"]["min_pitch"] = np.rad2deg(min_pitch_rad)
-        max_pitch_rad = dict_v2p0["control"]["pitch"]["max_pitch"]
-        dict_v2p0["control"]["pitch"]["max_pitch"] = np.rad2deg(max_pitch_rad)
-        max_pitch_rate_rad = dict_v2p0["control"]["pitch"]["max_pitch_rate"]
-        dict_v2p0["control"]["pitch"]["max_pitch_rate"] = np.rad2deg(max_pitch_rate_rad)
-        VS_minspd_rads = dict_v2p0["control"]["torque"]["VS_minspd"]
-        dict_v2p0["control"]["torque"]["VS_minspd"] = VS_minspd_rads * 30. / np.pi
-        VS_maxspd_rads = dict_v2p0["control"]["torque"]["VS_maxspd"]
-        dict_v2p0["control"]["torque"]["VS_maxspd"] = VS_maxspd_rads * 30. / np.pi
-        if "PC_zeta" in dict_v2p0["control"]["pitch"]:
-            dict_v2p0["control"]["pitch"].pop("PC_zeta")
-        if "PC_omega" in dict_v2p0["control"]["pitch"]:
-            dict_v2p0["control"]["pitch"].pop("PC_omega")
-        if "VS_zeta" in dict_v2p0["control"]["torque"]:
-            dict_v2p0["control"]["torque"].pop("VS_zeta")
-        if "VS_omega" in dict_v2p0["control"]["torque"]:
-            dict_v2p0["control"]["torque"].pop("VS_omega")
-        if "control_type" in dict_v2p0["control"]["torque"]:
-            dict_v2p0["control"]["torque"].pop("control_type")
-        if "setpoint_smooth" in dict_v2p0["control"]:
-            dict_v2p0["control"].pop("setpoint_smooth")
-        if "shutdown" in dict_v2p0["control"]:
-            dict_v2p0["control"].pop("shutdown")
+        flat = {}
+        if "rated_power" in dict_v2p0.get("assembly", {}):
+            flat["rated_power"] = dict_v2p0["assembly"]["rated_power"]
+        if "VS_minspd" in torque:  # rad/s -> rpm
+            flat["min_rotor_speed"] = torque["VS_minspd"] * 30.0 / np.pi
+        if "VS_maxspd" in torque:  # rated rotor speed, rad/s -> rpm
+            flat["rated_rotor_speed"] = torque["VS_maxspd"] * 30.0 / np.pi
+        if "tsr" in torque:
+            flat["optimal_tsr"] = torque["tsr"]
+        if "max_torque_rate" in torque:
+            flat["max_torque_rate"] = torque["max_torque_rate"]
+        if "min_pitch" in pitch:  # rad -> deg
+            flat["min_pitch_limit"] = np.rad2deg(pitch["min_pitch"])
+            flat["fine_pitch"] = np.rad2deg(pitch["min_pitch"])
+        if "max_pitch" in pitch:  # rad -> deg
+            flat["max_pitch_limit"] = np.rad2deg(pitch["max_pitch"])
+        if "max_pitch_rate" in pitch:  # rad/s -> deg/s
+            flat["max_pitch_rate"] = np.rad2deg(pitch["max_pitch_rate"])
+        if "ps_percent" in pitch:
+            flat["peak_thrust_shaving"] = pitch["ps_percent"]
+        if "maxTS" in supervisory:
+            flat["max_allowable_blade_tip_speed"] = supervisory["maxTS"]
+        if "yaw_rate" in yaw:
+            flat["yaw_rate"] = yaw["yaw_rate"]
 
+        dict_v2p0["control"] = flat
         return dict_v2p0
 
 
