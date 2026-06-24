@@ -69,6 +69,9 @@ properties:
             oneOf:
               - $ref: "./common.yaml#/definitions/multi_dimensional_data"
               - $ref: "./common.yaml#/definitions/multi_dimensional_coordinate" 
+        operating:
+            description: Flag describing which turbines are operating
+            $ref: "common.yaml#/definitions/multi_dimensional_data"
         probability:
             description: Probability of flow cases [0,1]
             $ref: "./common.yaml#/definitions/multi_dimensional_data"
@@ -90,7 +93,17 @@ properties:
             type: number
         shear:
             title: Shear
-            $ref: "./common.yaml#/definitions/shear"
+            type: object
+            required:
+              - alpha
+              - h_ref
+            properties:
+                alpha:
+                    title: Alpha
+                    type: number
+                h_ref:
+                    title: Shear ref height
+                    type: number
         LMO:
             title: Monin-Obukhov length (m)
             $ref: "./common.yaml#/definitions/multi_dimensional_data"
@@ -141,109 +154,6 @@ properties:
         tau_y:
             title: Sheer stress y
             $ref: "./common.yaml#/definitions/multi_dimensional_data"
-
-
-# DEFINITIONS
-definitions:
-  reference_height:
-    title: Reference height
-    type: number
-
-  shear:
-    title: Shear
-    type: object
-    required:
-      - alpha
-      - h_ref
-    properties:
-      alpha:
-        title: Alpha
-        type: number
-      h_ref:
-        title: Shear ref height
-        type: number
-#     speedup:
-#       title: Speedup
-#       type: object
-#       required:
-#         - values
-#         - dimension
-#       properties:
-#         values:
-#           type: array
-#           items:
-#             type: number
-#         dimension:
-#           type: number
-#     turning:
-#       title: Turning
-#       type: object
-#       required:
-#         - values
-#         - dimension
-#       properties:
-#         values:
-#           type: array
-#           items:
-#             type: number
-#         dimension:
-#           type: number
-#     inflow_angle:
-#       title: Inflow angle
-#       type: object
-#       required:
-#         - values
-#         - dimension
-#       properties:
-#         values:
-#           type: array
-#           items:
-#             type: number
-#         dimension:
-#           type: number
-#     rho:
-#       title: Air density
-#       type: object
-#       required:
-#         - values
-#         - dimension
-#       properties:
-#         values:
-#           type: array
-#           items:
-#             type: number
-#         dimension:
-#           type: number
-#     shear:
-#       title: Shear
-#       type: object
-#       required:
-#         - alpha
-#         - h_ref
-#       properties:
-#         alpha:
-#           title: Alpha
-#           type: object
-#           required:
-#             - values
-#             - dimension
-#           properties:
-#             values:
-#               type: array
-#               items:
-#                 type: number
-#             dimension:
-#               type: number
-#         h_ref:
-#           title: Shear ref height
-#           type: object
-#           required:
-#             - values
-#             - dimension
-#           properties:
-#             values:
-#               type: array
-#               items:
-#                 type: number
-#             dimension:
-#               type: number
+        density:
+            title: Air density (kg/m3)
+            $ref: "./common.yaml#/definitions/multi_dimensional_data"

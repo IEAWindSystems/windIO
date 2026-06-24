@@ -91,6 +91,18 @@ properties:
                 units: yr
                 minimum: 0
                 default: 25.0
+            cut_in_wind_speed:
+                type: number
+                description: Cut-in wind speed, i.e. the minimum wind speed at which the turbine starts producing power.
+                units: m/s
+                minimum: 0
+                default: 3.0
+            cut_out_wind_speed:
+                type: number
+                description: Cut-out wind speed, i.e. the maximum wind speed at which the turbine produces power.
+                units: m/s
+                minimum: 0
+                default: 25.0
     components:
         type: object
         description: Nested dictionary structure of components describing the wind turbine assembly
@@ -176,7 +188,7 @@ properties:
                                         $ref: "#/definitions/distributed_data/length"
                             twist:
                                 type: object
-                                description: Aerodynamic twist along blade span in degrees. Twist is generally positive toward blade root, and may become negative toward blade tip.
+                                description: Geometric twist of the local cross-sections along the blade span in degrees. Twist is generally positive toward blade root, and may become negative toward blade tip. Aerodynamic properties and equivalent elastic properties of the blade are defined with respect to this distribution of twist.
                                 required:
                                     - grid
                                     - values
@@ -375,7 +387,7 @@ properties:
                                         plane_intersection:
                                             type: object
                                             description: Defines a plane intersection for computing the arc position(s) of the anchor.
-                                            properties: 
+                                            properties:
                                                 side:
                                                     type: string
                                                     description: The field `side` is a string that defines the side where the intesection should be performed. It can be either `suction`, `pressure`, or `both`.
@@ -417,7 +429,7 @@ properties:
                                                             units: deg
                                                 offset:
                                                     type: object
-                                                    properties:                                                         
+                                                    properties:
                                                         grid:
                                                             $ref: "#/definitions/distributed_data/grid_nd"
                                                         values:
@@ -478,7 +490,7 @@ properties:
                                                             thickness:
                                                                 type: object
                                                                 description: thickness of the bondline in meters described as function of spanwise grid
-                                                                properties: 
+                                                                properties:
                                                                     grid:
                                                                         $ref: "#/definitions/distributed_data/grid_nd"
                                                                     values:
@@ -542,7 +554,7 @@ properties:
                                         fiber_orientation:
                                             type: object
                                             description: For composite laminates, the orientation of the fibers in degrees can be specified. Looking from blade root, positive angles represent a rotation of the fibers towards the leading edge of the blade. Note that the angles are with respect to the cross section local reference system, not the reference system at blade root.
-                                            default: 
+                                            default:
                                                 grid: [0.0, 1.0]
                                                 values: [0.0, 0.0]
                                             required:
@@ -561,7 +573,7 @@ properties:
                                             description: The field `end_nd_arc` is a reference to the anchor that defines the end of the layer. The anchor is defined in terms of `name`, `start_nd_arc`, and `end_nd_arc`.
                             trailing_edge_adhesive:
                                 type: object
-                                description: The trailing edge adhesive fills the void on the inside of the shell at the trailing edge, and its location is defined by four corners, two on the suction sice and two on the pressure side. 
+                                description: The trailing edge adhesive fills the void on the inside of the shell at the trailing edge, and its location is defined by four corners, two on the suction sice and two on the pressure side.
                                 properties:
                                     material:
                                         type: string
@@ -704,7 +716,7 @@ properties:
                     gearbox:
                         type: object
                         description: Inputs describing the gearbox, when present
-                        properties: 
+                        properties:
                             gear_ratio:
                                 type: number
                                 description: Gear ratio of the drivetrain. Set it to 1 for direct drive machines.
@@ -807,7 +819,7 @@ properties:
                     lss:
                         type: object
                         description: Inputs describing the low speed shaft
-                        properties:         
+                        properties:
                             length:
                                 type: number
                                 description: Length of the low speed shaft
@@ -845,7 +857,7 @@ properties:
                     hss:
                         type: object
                         description: Inputs describing the high speed shaft, when present
-                        properties:          
+                        properties:
                             length:
                                 type: number
                                 description: Length of the high speed shaft
@@ -914,8 +926,8 @@ properties:
                             wall_thickness:
                                 type: object
                                 description: Thickness of the hollow elliptical bedplate used in direct drive configurations
-                                default: 
-                                    grid: [0.0, 1.0] 
+                                default:
+                                    grid: [0.0, 1.0]
                                     values: [0.05, 0.05]
                                 required:
                                     - grid
@@ -977,7 +989,7 @@ properties:
                                 default: 0.0
                                 units: kg
                                 description: Override regular regression-based calculation of transformer mass with this value
-                                minimum: 0.0                     
+                                minimum: 0.0
                             mb1Type:
                                 type: string
                                 description: Type of bearing for first main bearing
@@ -991,7 +1003,7 @@ properties:
                             uptower:
                                 type: boolean
                                 description: If power electronics are located uptower (True) or at tower base (False)
-                                default: True                  
+                                default: True
                             elastic_properties:
                                 $ref: "#/definitions/rigid_body"
                                 description: Rigid body modeling the assembly of brake, hvac, converter, transformer, and main bearings. Their inertia is defined with respect to the tower top coordinate system.
@@ -1017,11 +1029,11 @@ properties:
                             units: kg
                             minimum: 0.
                             maximum: 1.e+9
-                            default: 0.0                            
+                            default: 0.0
                         rpm_efficiency:
                             type: object
                             description: User input override of generator rpm-efficiency values, with rpm as grid input and eff as values input
-                            default: 
+                            default:
                                 grid: [0.0]
                                 values: [0.0]
                             required:
@@ -1098,7 +1110,7 @@ properties:
                             - outer_diameter
                             - cd
                         properties:
-                            outer_diameter: 
+                            outer_diameter:
                                 type: object
                                 description: Outer diameters of the tower defined from base (grid = 0) to top (grid = 1).
                                 required:
@@ -1397,6 +1409,9 @@ properties:
                                 - reactions
                                 - transition
                                 - cylindrical
+                                - relative
+                                - relative_dims
+                                - axial_coeffs
                             properties:
                                 name:
                                     description: Unique name of the joint (node)
@@ -1417,6 +1432,37 @@ properties:
                                     description: Whether to use cylindrical coordinates (r,θ,z), with (r,θ) lying in the x/y-plane, instead of Cartesian coordinates.
                                     type: boolean
                                     default: False
+                                relative:
+                                    description: Make this joint relative to the stated joint, which is helpful when member dimensions are changing in a design loop (non-cylindrical joints only)
+                                    default: origin
+                                    type: string
+                                relative_dims:
+                                    description: Three dimensional boolean array denoting which dimensions are relative
+                                    default: [True, True, True]
+                                    type: array
+                                    items:
+                                        type: boolean
+                                axial_coeffs:
+                                    description: Axial hydrodynamic coefficients for lumped loads at the joint.
+                                    type: object
+                                    default: {}
+                                    optional:
+                                        - Ca
+                                        - Cd
+                                        - Cp
+                                    properties:
+                                        Ca:
+                                            description: Coefficient of added mass
+                                            type: number
+                                            default: 0.0
+                                        Cd:
+                                            description: Coefficient of viscous drag
+                                            type: number
+                                            default: 0.0
+                                        Cp:
+                                            description: Coefficient of dynamic pressure
+                                            type: number
+                                            default: 0.0
                                 reactions:
                                     # TODO: How to do carabiner type joints that only support tension and not compression?
                                     type: object
@@ -1489,8 +1535,8 @@ properties:
                                                     const: rectangular
                                         then:
                                             required:
-                                                - side_lengths_a
-                                                - side_lengths_b
+                                                - side_length_a
+                                                - side_length_b
                                             # TODO: Might add rotation in the future, ignore for now
                                         else:
                                             if:
@@ -1762,7 +1808,7 @@ properties:
                                     description: User-defined drag coefficient if axi-symmetric or user-defined drag coefficient in x-direction
                                 Cdy:
                                     <<: *cd
-                                    description: User-defined drag coefficient in y-direction                
+                                    description: User-defined drag coefficient in y-direction
                     rigid_bodies:
                         type: array
                         description: Additional point masses at joints with user-customized properties
@@ -2085,7 +2131,7 @@ properties:
                 name:
                     type: string
                     description: Name of the airfoil
-                description: 
+                description:
                     type: string
                     description: Text documenting airfoil data
                 coordinates:
@@ -2127,7 +2173,7 @@ properties:
                     description: Float defined between 0 (leading edge) and 1 (trailing edge) to specify the chordwise coordinate of the aerodynamic center used to define the polars.
                 polars:
                     type: array
-                    description: Different sets of polars at varying conditions. 
+                    description: Different sets of polars at varying conditions.
                     items:
                         type: object
                         properties:
@@ -2553,7 +2599,7 @@ properties:
                             maximum: 1000
                             default: 1.0
                 R:
-                    description: Fatigue stress ratio. An array can be defined to build Goodman-correction diagrams. 
+                    description: Fatigue stress ratio. An array can be defined to build Goodman-correction diagrams.
                     oneOf:
                         - type: number
                           units: dimensionless
@@ -2567,7 +2613,7 @@ properties:
                             maximum: 100
                             default: -1.0
                 N:
-                    description: Number of cycles for fatigue failure. An array can be defined to support multi-segment S-N curves such as for metals. 
+                    description: Number of cycles for fatigue failure. An array can be defined to support multi-segment S-N curves such as for metals.
                     oneOf:
                         - type: integer
                           units: dimensionless
@@ -2581,115 +2627,148 @@ properties:
                             maximum: 1e+10
                             default: 1
     control:
-        # additionalProperties: True
         type: object
         description: Dictionary reporting the data describing the wind turbine controller
-        required:
-            - supervisory
-            - torque
-            - pitch
         properties:
-            supervisory:
+            min_rotor_speed:
+                type: number
+                description: Minimum allowed rotor speed by the controller
+                units: rpm
+                minimum: 0
+            rated_rotor_speed:
+                type: number
+                description: Rated rotor speed, regulated by the controller.  rated_power * efficiencies / rated_rotor_speed = rated torque.
+                units: rpm
+                minimum: 0
+            rated_power:
+                type: number
+                description: Rated power of the wind turbine, regulated by the controller.
+                units: W
+                minimum: 0
+            max_rotor_speed:
+                type: number
+                description: Maximum allowed rotor speed. Speeds greater than this will trigger a shutdown. Should be ~5-20% greater than rated_rotor_speed.
+                units: rpm
+                minimum: 0
+            max_gen_torque: 
+                type: number
+                description: Maximum allowed generator torque.  Should be ~10-20% higher than rated torque.  Used in constant power applications.
+                units: N*m
+                minimum: 0
+            max_torque_rate:
+                type: number
+                description: Maximum torque rate of the wind turbine generator.
+                units: N*m/s
+                minimum: 0
+            fine_pitch:
+                type: number
+                description: Constant pitch angle for optimal power production below rated (usually corresponding to a single, optimal tip speed ratio).
+                units: deg
+                minimum: -90
+                maximum: 90
+            optimal_tsr:
+                type: number
+                description: Optimal tip speed ratio for power production below rated.
+                minimum: 0
+            min_pitch_table:
                 type: object
-                required:
-                    - Vin
-                    - Vout
-                    - maxTS
+                description: Minimum pitch vs. wind speed table used for optimizing power production and/or limiting rotor thrust
                 properties:
-                    Vin:
-                        type: number
-                        description: Cut-in wind speed of the wind turbine.
-                        units: m/s
-                        minimum: 0
-                        maximum: 10
-                    Vout:
-                        type: number
-                        description: Cut-out wind speed of the wind turbine.
-                        units: m/s
-                        minimum: 0
-                        maximum: 50
-                    maxTS:
-                        type: number
-                        description: Maximum allowable blade tip speed.
-                        units: m/s
-                        minimum: 60
-                        maximum: 120
-            pitch:
-                # additionalProperties: True
-                type: object
-                required:
-                    - max_pitch_rate
-                properties:
+                    wind_speed:
+                        $ref: "#/definitions/distributed_data/velocity"
                     min_pitch:
-                        type: number
-                        description: Minimum pitch angle, where the default is 0 deg
-                        units: deg
-                        minimum: -10.0
-                        maximum: 90.
-                        default: 0.0
-                    max_pitch:
-                        type: number
-                        description: Maximum pitch angle, where the default is 90 deg
-                        units: deg
-                        minimum: 10.
-                        maximum: 120.
-                        default: 90.
-                    max_pitch_rate:
-                        type: number
-                        description: Maximum pitch rate of the rotor blades.
-                        units: deg/s
-                        minimum: 0
-                        maximum: 30.
-                    ps_percent:
-                        type: number
-                        description: Nondimensional factor shaving peak thrust. 1 means no peak thrust shaving
-                        minimum: 0
-                        default: 0.8
-                        maximum: 1.
-            torque:
-                # additionalProperties: True
+                        $ref: "#/definitions/distributed_data/angle"
+            min_pitch_limit:
+                type: number
+                description: Constant minimum pitch angle (hardware) limit.  The pitch angle cannot be less than this value.
+                units: deg
+                minimum: -90
+                maximum: 90
+            max_pitch_limit:
+                type: number
+                description: Maximum pitch angle using during parked or idling.  Can be a hardware or software limit.
+                units: deg
+                minimum: -90
+                maximum: 90
+            max_pitch_rate:
+                type: number
+                description: Maximum pitch rate of the rotor blades.
+                units: deg/s
+                minimum: 0
+            lpf_frequency:
+                type: number
+                description: Low pass filter frequency of generator/rotor speed measurement for the controller.
+                units: rad/s
+                minimum: 0
+            lpf_damping:
+                type: number
+                description: Damping ratio of the low pass filter for generator/rotor speed measurement.
+                units: dimensionless
+                minimum: 0
+            region2_k:
+                type: number
+                description: Optimal gain for below rated torque control (k * rotor_speed^2 = generator_torque).
+                units: N*m/(rpm)^2 
+                minimum: 0
+            gen_torque_kp:
+                type: number
+                description: Gain from rotor speed (rpm) to generator torque (N*m) in a proportional controller.
+                units: N*m/rpm 
+            gen_torque_ki:
+                type: number
+                description: Gain from rotor speed (rpm) to generator torque (N*m) in an integratal control element. 
+                units: N*m/(rpm*s)
+            pitch_kp:
                 type: object
-                required:
-                    - tsr
-                    - VS_minspd
+                description: Gain schedule (gain vs. pitch) from rotor speed (rpm) to blade pitch (deg) in a proportional controller.
                 properties:
-                    max_torque_rate:
-                        type: number
-                        description: Maximum torque rate of the wind turbine generator.
-                        units: N*m/s
-                        minimum: 1000
-                        maximum: 100000000
-                    tsr:
-                        type: number
-                        description: Rated tip speed ratio of the wind turbine. As default, it is maintained constant in region II.
-                        units: dimensionless
-                        minimum: 0
-                        maximum: 15
-                    VS_minspd:
-                        type: number
-                        description: Minimum rotor speed.
-                        units: rpm
-                        minimum: 0
-                        maximum: 20.
-                    VS_maxspd:
-                        type: number
-                        description: Maximum rotor speed.
-                        units: rpm
-                        minimum: 0
-                        default: 100.
-            yaw:
+                    pitch_angle:
+                        $ref: "#/definitions/distributed_data/angle"
+                    kp:
+                        type: array
+                        items:
+                            type: number
+                        units: deg/rpm 
+            pitch_ki:
                 type: object
-                description: Yaw system data.
-                required:
-                    - yaw_rate
+                description: Gain schedule (gain vs. pitch) from rotor speed (rpm) to blade pitch (deg) in an integral control element.
                 properties:
-                    yaw_rate:
-                        type: number
-                        description: Maximum yaw rate of the wind turbine.
-                        units: deg/s
-                        minimum: 0
-                        maximum: 30.
-                        default: 1.
+                    pitch_angle:
+                        $ref: "#/definitions/distributed_data/angle"
+                    ki:
+                        type: array
+                        items:
+                            type: number
+                        units: deg/rpm 
+            constant_power:
+                type: number
+                description: Flag for using consant torque (0) or constant power (1) torque control above rated.
+                enum: [0,1]
+            gen_actuator_frequency:
+                type: number
+                description: Natural frequency of the generator torque actuator model 2nd order system.
+                units: rad/s
+                minimum: 0
+            gen_actuator_damping:
+                type: number
+                description: Damping ratio of the generator torque actuator model 2nd order system.
+                units: dimensionless
+                minimum: 0
+            pitch_actuator_frequency:
+                type: number
+                description: Natural frequency of the pitch actuator model 2nd order system.
+                units: rad/s
+                minimum: 0
+            pitch_actuator_damping:
+                type: number
+                description: Damping ratio of the pitch actuator model 2nd order system.
+                units: dimensionless
+                minimum: 0
+            yaw_rate:
+                type: number
+                description: Constant rate used during yawing maneuvers.
+                units: deg/s
+                minimum: 0
     outputs:
         type: object
         description: Modal response and loads and performance metrics describing the turbine
@@ -2939,6 +3018,14 @@ definitions:
                     units: m
                     minItems: 2
             minItems: 2
+        velocity:
+            type: array
+            default: [0.0, 0.0]
+            items:
+                type: number
+                units: m/s
+                minItems: 2
+                uniqueItems: false
         force:
             type: array
             description: Loading described along a beam, expressed in N per meter
@@ -2988,15 +3075,15 @@ definitions:
             anchor:
                 type: object
                 properties:
-                    name: 
+                    name:
                         type: string
-                    handle: 
+                    handle:
                         type: string
                 required: [name, handle]
         required: [anchor]
     beam:
         type: object
-        description: The equivalent elastic properties of a beam are defined in `elastic_properties`. Here, 6x6 stiffness and mass matrices are defined. Out of 36 entries of the matrices, given the symmetry, the yaml file requires the definition of only 21 values as inputs for the stiffness matrix, whereas the inertia matrix is defined in terms of unit mass, coordinates of the center of mass, and mass moments of inertia.
+        description: The equivalent elastic properties of a beam are defined in `elastic_properties`. Here, 6x6 stiffness and mass matrices are defined. Out of 36 entries of the matrices, given the symmetry, the yaml file requires the definition of only 21 values as inputs for the stiffness matrix, whereas the inertia matrix is defined in terms of unit mass, coordinates of the center of mass, and mass moments of inertia. For the blade, these properties are defined with respect to the aerodynamic twist, which is the same as structural twist.
         required:
             - stiffness_matrix
             - inertia_matrix
@@ -3297,160 +3384,3 @@ definitions:
                     minItems: 3
                     maxItems: 3
                     uniqueItems: false
-    filter:
-        type: object
-        description: Linear filter, could be a LPF, HPF, NF, INF, or user_defined
-        required:
-            - filt_type
-            #- filt_def
-        properties:
-            filt_type:
-                type: string
-                description: Type of filter used, could be a LPF, HPF, NF, INF, or user_defined
-                enum:
-                    - LPF
-                    - HPF
-                    - NF
-                    - INF
-                    - user_defined
-            # Seems unfinished - kenloen
-            #filt_def:
-            #LPF:
-            #    type: object
-            #    description: Low pass filter
-            #    required:
-            #        - omega
-            #        - order
-            #    optional:
-            #        - damping
-            #HPF:
-            #NF:
-            #INF:
-            user_defined:
-                type: object
-                description: User defined filter
-                required:
-                    - num
-                    - den
-                optional:
-                    - dt
-                properties:
-                    num:
-                        type: array
-                        description: Numerator coefficients of linear filter
-                        items:
-                            type: number
-                            units: dimensionless
-                            minItems: 0
-                            uniqueItems: false
-                    den:
-                        type: array
-                        description: Numerator coefficients of linear filter
-                        items:
-                            type: number
-                            units: dimensionless
-                            minItems: 1
-                            uniqueItems: false
-                    dt:
-                        type: number
-                        description: Sampling rate of filter, -1 for continuous   # DZ: will probably convert all to dt of simulation... not sure how to handle this
-                        minimum: -1
-
-    state_space:
-        type: object
-        description: Linear state space model
-        required:
-            - ss_A
-            - ss_B
-            - ss_C
-            - ss_D
-        properties:
-            ss_A:
-                type: array
-                description: A matrix of linear state space model, flattened with n_states^2 elements
-                items:
-                    type: number
-                    minItems: 1
-                    uniqueItems: false
-            ss_B:
-                type: array
-                description: B matrix of linear state space model, flattened with n_states x n_inputs elements
-                items:
-                    type: number
-                    minItems: 1
-                    uniqueItems: false
-            ss_C:
-                type: array
-                description: C matrix of linear state space model, flattened with n_outputs x n_states elements
-                items:
-                    type: number
-                    minItems: 1
-                    uniqueItems: false
-            ss_D:
-                type: array
-                description: D matrix of linear state space model, flattened with n_outputs x n_inputs elements
-                items:
-                    type: number
-                    minItems: 1
-                    uniqueItems: false
-            # DZ: might be a good idea to check the number of states
-            ss_dt:
-                type: number
-                description: Sampling rate of filter, -1 for continuous   # DZ: will probably convert all to dt of simulation... not sure how to handle this
-                minimum: -1
-
-    timeseries:
-        type: object
-        description: Array of time, value pairs  # DZ: can we check that the number of elements are equal?
-        required:
-            - time
-            - value
-        optional:
-            - filename
-        properties:
-            time:
-                type: array
-                description: Time in timeseries
-                items:
-                    type: number
-                    units: s
-                    minItems: 1
-                    uniqueItems: true   # probably?
-            value:
-                type: array
-                description: Value in timeseries
-                items:
-                    type: number
-                    units: dimensionless  #any
-                    minItems: 1
-                    uniqueItems: false
-                    # can we check that number of elements are equal?
-            filename:
-                type: string
-                description: Name of file with timeseries data
-
-    activator:
-        type: object
-        description: Gain used to enable/disable control elements, can be used partially
-        required:
-            - wind_speeds
-            - act_gain
-        properties:
-            wind_speeds:
-                type: array
-                description: Array of wind speed breakpoints for activators
-                items:
-                    type: number
-                    units: m/s
-                    minItems: 1
-                    uniqueItems: true
-            act_gain:
-                type: array
-                description: Array of gains from 0 to 1, enabling/disabling control element
-                items:
-                    type: number
-                    units: dimensionless
-                    minItems: 1
-                    uniqueItems: false
-                    minimum: 0
-                    maximum: 1

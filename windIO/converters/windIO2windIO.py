@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+import argparse
+import sys
 import os
 import traceback
 from copy import deepcopy
@@ -9,6 +12,8 @@ class v1p0_to_v2p0:
     def __init__(self, filename_v1p0, filename_v2p0, **kwargs) -> None:
         self.filename_v1p0 = filename_v1p0
         self.filename_v2p0 = filename_v2p0
+
+        os.makedirs(os.path.dirname(os.path.realpath(self.filename_v2p0)), exist_ok=True)
 
     def convert(self):
         print("Converter windIO v1.0 to v2.0 started.")
@@ -602,7 +607,8 @@ class v1p0_to_v2p0:
             #dict_v2p0["components"]["drivetrain"]["generator"] = deepcopy(v1p0_nac["generator"])
             if "generator_length" in v1p0_nac["generator"]:
                 dict_v2p0["components"]["drivetrain"]["generator"]["length"] = v1p0_nac["generator"]["generator_length"]
-                dict_v2p0["components"]["drivetrain"]["generator"].pop("generator_length")
+                if "generator_length" in dict_v2p0["components"]["drivetrain"]["generator"]:
+                    dict_v2p0["components"]["drivetrain"]["generator"].pop("generator_length")
             else:
                 if "generator_length" in v1p0_dt:
                     dict_v2p0["components"]["drivetrain"]["generator"]["length"] = v1p0_dt["generator_length"]
@@ -709,10 +715,16 @@ class v1p0_to_v2p0:
             # switch from rad to deg
             if "angles" in members[i_memb]["outer_shape"]:
                 angles_rad = members[i_memb]["outer_shape"]["angles"]
-                members[i_memb]["outer_shape"]["angles"] = np.rad2deg(angles_rad)
+                if angles_rad < 0.5*np.pi:
+                    members[i_memb]["outer_shape"]["angles"] = np.rad2deg(angles_rad)
             if "rotation" in members[i_memb]["outer_shape"]:
                 rotation_rad = members[i_memb]["outer_shape"]["rotation"]
-                members[i_memb]["outer_shape"]["rotation"] = np.rad2deg(rotation_rad)
+                if rotation_rad < 0.5*np.pi:
+                    members[i_memb]["outer_shape"]["rotation"] = np.rad2deg(rotation_rad)
+            if "longitudinal_stiffeners" in members[i_memb]["structure"]:
+                spacing_rad = members[i_memb]["structure"]["longitudinal_stiffeners"]["spacing"]
+                if spacing_rad < 0.5*np.pi:
+                    members[i_memb]["structure"]["longitudinal_stiffeners"]["spacing"] = np.rad2deg(spacing_rad)
         return dict_v2p0
 
     def convert_airfoils(self, dict_v2p0):
@@ -817,19 +829,74 @@ class v1p0_to_v2p0:
 
         dict_v2p0["control"] = flat
         return dict_v2p0
-
-
-if __name__ == "__main__":
     
-    from pathlib import Path
+class v2p0_to_v2p1:
 
-    turbine_reference_path = Path(windIO.turbine_ex.__file__).parent
+    def __init__(self, filename_v2p0, filename_v2p1):
+        self.filename_v2p0 = filename_v2p0
+        self.filename_v2p1 = filename_v2p1
 
-    filename_v1p0 = "../../test/turbine/v1p0/IEA-15-240-RWT.yaml"
-    filename_v2p0 = turbine_reference_path / "IEA-15-240-RWT_v2p0.yaml"
+        os.makedirs(os.path.dirname(os.path.realpath(self.filename_v2p1)), exist_ok=True)
+
+    def convert(self):
+        # Load v2.0 file
+        dict_v2p0 = windIO.load_yaml(self.filename_v2p0)
+
+        # Start with a copy of v2.0
+        dict_v2p1 = deepcopy(dict_v2p0)
+
+        # Currently, only controls are updated in v2.1
+        dict_v2p1 = self.convert_controls(dict_v2p1)
+
+        # Save v2.1 file
+        windIO.yaml.write_yaml(dict_v2p1, self.filename_v2p1)
+        print(f"Converted windIO v2.0 file {self.filename_v2p0} to windIO v2.1 file {self.filename_v2p1}.")
+        return dict_v2p1
+    
+    def convert_controls(self, dict_v2p1):
+        # Controls, update a few fields from rad to deg and from rad/s to rpm
+        
+        # Switch these fields over to new names
+        dict_v2p1["control"]["min_pitch_limit"] = dict_v2p1["control"]["pitch"]["min_pitch"]
+        dict_v2p1["control"]["max_pitch_limit"] = dict_v2p1["control"]["pitch"]["max_pitch"]
+        dict_v2p1["control"]["max_pitch_rate"]  = dict_v2p1["control"]["pitch"]["max_pitch_rate"]
+        dict_v2p1["control"]["min_rotor_speed"] = dict_v2p1["control"]["torque"]["VS_minspd"]
+        dict_v2p1["control"]["max_rotor_speed"] = dict_v2p1["control"]["torque"]["VS_maxspd"]
+
+        # Remove these sub-fields
+        if "supervisory" in dict_v2p1["control"]:
+            dict_v2p1["control"].pop("supervisory")
+        if "torque" in dict_v2p1["control"]:
+            dict_v2p1["control"].pop("torque")
+        if "pitch" in dict_v2p1["control"]:
+            dict_v2p1["control"].pop("pitch")
+        if "shutdown" in dict_v2p1["control"]:
+            dict_v2p1["control"].pop("shutdown")
+        return dict_v2p1
+
+    
+def run():
+    parser = argparse.ArgumentParser(description="WindIO v1->v2 Converter")
+    parser.add_argument("-i", "--input", help="Input v1 filename path")
+    parser.add_argument("-o", "--output", help="Output v2 filename path")
+    args = parser.parse_args()
+
+    filename_v1p0 = args.input
+    filename_v2p0 = args.output
     
     if not os.path.exists(filename_v1p0):
-        raise Exception("Point to an existing yaml file that you want to convert from windIO v1.0 to v2.0.")
+        raise Exception(f"Cannot find input windIO v1.0 file: {filename_v1p0}.")
 
     converter = v1p0_to_v2p0(filename_v1p0, filename_v2p0)
     converter.convert()
+
+    # Convert from v2.0 to v2.1
+    converter_2 = v2p0_to_v2p1(filename_v2p0, filename_v2p0)
+    converter_2.convert()
+        
+    sys.exit(0)
+
+    
+if __name__ == "__main__":
+    run()
+    

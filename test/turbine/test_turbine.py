@@ -2,7 +2,7 @@ import unittest
 from pathlib import Path
 import windIO
 import windIO.schemas
-from windIO.converters.windIO2windIO import v1p0_to_v2p0
+from windIO.converters.windIO2windIO import v1p0_to_v2p0, v2p0_to_v2p1
 
 from jsonschema import Draft7Validator
 
@@ -71,43 +71,59 @@ class TestRegression(unittest.TestCase):
     def test_v1p0_2p0_converter_IEA_15_240_RWT(self):
 
         filename_v1p0 = test_dir / "v1p0" / "IEA-15-240-RWT.yaml"
-        filename_v2p0 = test_dir / "IEA-15-240-RWT.yaml"
+        filename_v2p0 = test_dir / "v2p0" / "IEA-15-240-RWT.yaml"
+        filename_v2p1 = test_dir / "IEA-15-240-RWT.yaml"
 
         converter = v1p0_to_v2p0(filename_v1p0, filename_v2p0)
         converter.convert()
 
+        converter = v2p0_to_v2p1(filename_v2p0, filename_v2p1)
+        converter.convert()
+
         # Now validate the output
-        windIO.validate(filename_v2p0, schema_type="turbine/turbine_schema")
+        windIO.validate(filename_v2p1, schema_type="turbine/turbine_schema")
 
     def test_v1p0_2p0_converter_IEA_15_240_RWT_VolturnUS_S(self):
 
         filename_v1p0 = test_dir / "v1p0" / "IEA-15-240-RWT_VolturnUS-S.yaml"
-        filename_v2p0 = test_dir / "IEA-15-240-RWT_VolturnUS-S.yaml"
+        filename_v2p0 = test_dir / "v2p0" / "IEA-15-240-RWT_VolturnUS-S.yaml"
+        filename_v2p1 = test_dir / "IEA-15-240-RWT_VolturnUS-S.yaml"
 
         converter = v1p0_to_v2p0(filename_v1p0, filename_v2p0)
+        converter.convert()
+
+        converter = v2p0_to_v2p1(filename_v2p0, filename_v2p1)
         converter.convert()
 
     def test_v1p0_2p0_converter_IEA_22_280_RWT(self):
         
         filename_v1p0 = test_dir / "v1p0" / "IEA-22-280-RWT.yaml"
-        filename_v2p0 = test_dir / "IEA-22-280-RWT.yaml"
+        filename_v2p0 = test_dir / "v2p0" / "IEA-22-280-RWT.yaml"
+        filename_v2p1 = test_dir / "IEA-22-280-RWT.yaml"
                  
         converter = v1p0_to_v2p0(filename_v1p0, filename_v2p0)
         converter.convert()
 
+        converter = v2p0_to_v2p1(filename_v2p0, filename_v2p1)
+        converter.convert()
+
         # Now validate the output
-        windIO.validate(filename_v2p0, schema_type="turbine/turbine_schema")
+        windIO.validate(filename_v2p1, schema_type="turbine/turbine_schema")
 
     def test_v1p0_2p0_converter_IEA_22_280_RWT_Floater(self):
         
         filename_v1p0 = test_dir / "v1p0" / "IEA-22-280-RWT_Floater.yaml"
-        filename_v2p0 = test_dir / "IEA-22-280-RWT_Floater.yaml"
+        filename_v2p0 = test_dir / "v2p0" / "IEA-22-280-RWT_Floater.yaml"
+        filename_v2p1 = test_dir / "IEA-22-280-RWT_Floater.yaml"
                  
         converter = v1p0_to_v2p0(filename_v1p0, filename_v2p0)
         converter.convert()
 
+        converter = v2p0_to_v2p1(filename_v2p0, filename_v2p1)
+        converter.convert()
+
         # Now validate the output
-        windIO.validate(filename_v2p0, schema_type="turbine/turbine_schema")
+        windIO.validate(filename_v2p1, schema_type="turbine/turbine_schema")
 
     def test_valid_schema(self):
 
@@ -126,3 +142,7 @@ class TestRegression(unittest.TestCase):
         schema = windIO.load_yaml(path2schema)
 
         windIO.schemas.windIOMetaSchema.check_schema(schema)
+
+if __name__ == "__main__":
+    unittest.main()
+    
