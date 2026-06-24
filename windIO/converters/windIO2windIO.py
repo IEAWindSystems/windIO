@@ -855,23 +855,30 @@ class v2p0_to_v2p1:
     
     def convert_controls(self, dict_v2p1):
         # Controls, update a few fields from rad to deg and from rad/s to rpm
-        
-        # Switch these fields over to new names
-        dict_v2p1["control"]["min_pitch_limit"] = dict_v2p1["control"]["pitch"]["min_pitch"]
-        dict_v2p1["control"]["max_pitch_limit"] = dict_v2p1["control"]["pitch"]["max_pitch"]
-        dict_v2p1["control"]["max_pitch_rate"]  = dict_v2p1["control"]["pitch"]["max_pitch_rate"]
-        dict_v2p1["control"]["min_rotor_speed"] = dict_v2p1["control"]["torque"]["VS_minspd"]
-        dict_v2p1["control"]["max_rotor_speed"] = dict_v2p1["control"]["torque"]["VS_maxspd"]
+        control = dict_v2p1["control"]
 
-        # Remove these sub-fields
-        if "supervisory" in dict_v2p1["control"]:
-            dict_v2p1["control"].pop("supervisory")
-        if "torque" in dict_v2p1["control"]:
-            dict_v2p1["control"].pop("torque")
-        if "pitch" in dict_v2p1["control"]:
-            dict_v2p1["control"].pop("pitch")
-        if "shutdown" in dict_v2p1["control"]:
-            dict_v2p1["control"].pop("shutdown")
+        # If control still uses the old nested v1-style pitch/torque sub-sections,
+        # promote the relevant fields to the flat v2.x top-level names.
+        if "pitch" in control:
+            pitch = control["pitch"]
+            if "min_pitch" in pitch:
+                control["min_pitch_limit"] = pitch["min_pitch"]
+            if "max_pitch" in pitch:
+                control["max_pitch_limit"] = pitch["max_pitch"]
+            if "max_pitch_rate" in pitch:
+                control["max_pitch_rate"] = pitch["max_pitch_rate"]
+
+        if "torque" in control:
+            torque = control["torque"]
+            if "VS_minspd" in torque:
+                control["min_rotor_speed"] = torque["VS_minspd"]
+            if "VS_maxspd" in torque:
+                control["max_rotor_speed"] = torque["VS_maxspd"]
+
+        # Remove nested sub-sections that are no longer used in v2.1
+        for key in ["supervisory", "torque", "pitch", "shutdown"]:
+            control.pop(key, None)
+
         return dict_v2p1
 
     
