@@ -545,87 +545,87 @@ class v1p0_to_v2p1:
             dict_v2px["components"]["drivetrain"]["gearbox"]["damping_ratio"] = v1p1_dt["damping_ratio"]
         if "gear_configuration" in v1p1_dt:
             dict_v2px["components"]["drivetrain"]["gearbox"]["gear_configuration"] = v1p1_dt["gear_configuration"]
-        if "planet_numbers" in v1p0_dt:
-            dict_v2p0["components"]["drivetrain"]["gearbox"]["planet_numbers"] = v1p0_dt["planet_numbers"]
+        if "planet_numbers" in v1p1_dt:
+            dict_v2px["components"]["drivetrain"]["gearbox"]["planet_numbers"] = v1p1_dt["planet_numbers"]
         
-        dict_v2p0["components"]["drivetrain"]["lss"] = {}
-        if "lss_length" in v1p0_dt:
-            dict_v2p0["components"]["drivetrain"]["lss"]["length"] = v1p0_dt["lss_length"]
-        if "lss_diameter" in v1p0_dt:
-            dict_v2p0["components"]["drivetrain"]["lss"]["diameter"] = v1p0_dt["lss_diameter"]
-        if "lss_wall_thickness" in v1p0_dt:
-            dict_v2p0["components"]["drivetrain"]["lss"]["wall_thickness"] = v1p0_dt["lss_wall_thickness"]
-        if "lss_material" in v1p0_dt:
-            dict_v2p0["components"]["drivetrain"]["lss"]["material"] = v1p0_dt["lss_material"]
-        
-        dict_v2p0["components"]["drivetrain"]["hss"] = {}
-        if "hss_length" in v1p0_dt:
-            dict_v2p0["components"]["drivetrain"]["hss"]["length"] = v1p0_dt["hss_length"]
-        if "hss_diameter" in v1p0_dt:
-            dict_v2p0["components"]["drivetrain"]["hss"]["diameter"] = v1p0_dt["hss_diameter"]
-        if "hss_wall_thickness" in v1p0_dt:
-            dict_v2p0["components"]["drivetrain"]["hss"]["wall_thickness"] = v1p0_dt["hss_wall_thickness"]
-        if "hss_material" in v1p0_dt:
-            dict_v2p0["components"]["drivetrain"]["hss"]["material"] = v1p0_dt["hss_material"]
-        
-        dict_v2p0["components"]["drivetrain"]["nose"] = {}
-        if "nose_diameter" in v1p0_dt:
-            dict_v2p0["components"]["drivetrain"]["nose"]["diameter"] = v1p0_dt["nose_diameter"]
-        if "nose_wall_thickness" in v1p0_dt:
-            dict_v2p0["components"]["drivetrain"]["nose"]["wall_thickness"] = v1p0_dt["nose_wall_thickness"]
-        
-        dict_v2p0["components"]["drivetrain"]["bedplate"] = {}
-        if "bedplate_wall_thickness" in v1p0_dt:
-            dict_v2p0["components"]["drivetrain"]["bedplate"]["wall_thickness"] = v1p0_dt["bedplate_wall_thickness"]
-        if "bedplate_flange_width" in v1p0_dt:
-            dict_v2p0["components"]["drivetrain"]["bedplate"]["flange_width"] = v1p0_dt["bedplate_flange_width"]
-        if "bedplate_flange_thickness" in v1p0_dt:
-            dict_v2p0["components"]["drivetrain"]["bedplate"]["flange_thickness"] = v1p0_dt["bedplate_flange_thickness"]
-        if "bedplate_web_thickness" in v1p0_dt:
-            dict_v2p0["components"]["drivetrain"]["bedplate"]["web_thickness"] = v1p0_dt["bedplate_web_thickness"]
-        if "bedplate_material" in v1p0_dt:
-            dict_v2p0["components"]["drivetrain"]["bedplate"]["material"] = v1p0_dt["bedplate_material"]
-        
-        dict_v2p0["components"]["drivetrain"]["other_components"] = {}
-        if "brake_mass_user" in v1p0_dt:
-            dict_v2p0["components"]["drivetrain"]["other_components"]["brake_mass"] = v1p0_dt["brake_mass_user"]
-        if "hvac_mass_coefficient" in v1p0_dt:
-            dict_v2p0["components"]["drivetrain"]["other_components"]["hvac_mass_coefficient"] = v1p0_dt["hvac_mass_coefficient"]
-        if "converter_mass_user" in v1p0_dt:
-            dict_v2p0["components"]["drivetrain"]["other_components"]["converter_mass"] = v1p0_dt["converter_mass_user"]
-        if "transformer_mass_user" in v1p0_dt:
-            dict_v2p0["components"]["drivetrain"]["other_components"]["transformer_mass"] = v1p0_dt["transformer_mass_user"]
-        if "mb1Type" in v1p0_dt:
-            dict_v2p0["components"]["drivetrain"]["other_components"]["mb1Type"] = v1p0_dt["mb1Type"]
-        if "mb2Type" in v1p0_dt:
-            dict_v2p0["components"]["drivetrain"]["other_components"]["mb2Type"] = v1p0_dt["mb2Type"]
-        if "uptower" in v1p0_dt:
-            dict_v2p0["components"]["drivetrain"]["other_components"]["uptower"] = v1p0_dt["uptower"]
+        dict_v2px["components"]["drivetrain"]["lss"] = {}
+        if "lss_length" in v1p1_dt:
+            dict_v2px["components"]["drivetrain"]["lss"]["length"] = v1p1_dt["lss_length"]
+        if "lss_diameter" in v1p1_dt:
+            dict_v2px["components"]["drivetrain"]["lss"]["diameter"] = v1p1_dt["lss_diameter"]
+        if "lss_wall_thickness" in v1p1_dt:
+            dict_v2px["components"]["drivetrain"]["lss"]["wall_thickness"] = v1p1_dt["lss_wall_thickness"]
+        if "lss_material" in v1p1_dt:
+            dict_v2px["components"]["drivetrain"]["lss"]["material"] = v1p1_dt["lss_material"]
 
-        dict_v2p0["components"]["drivetrain"]["generator"] = {}
-        if "generator" in v1p0_nac:
-            #dict_v2p0["components"]["drivetrain"]["generator"] = deepcopy(v1p0_nac["generator"])
-            if "generator_length" in v1p0_nac["generator"]:
-                dict_v2p0["components"]["drivetrain"]["generator"]["length"] = v1p0_nac["generator"]["generator_length"]
-                if "generator_length" in dict_v2p0["components"]["drivetrain"]["generator"]:
-                    dict_v2p0["components"]["drivetrain"]["generator"].pop("generator_length")
+        dict_v2px["components"]["drivetrain"]["hss"] = {}
+        if "hss_length" in v1p1_dt:
+            dict_v2px["components"]["drivetrain"]["hss"]["length"] = v1p1_dt["hss_length"]
+        if "hss_diameter" in v1p1_dt:
+            dict_v2px["components"]["drivetrain"]["hss"]["diameter"] = v1p1_dt["hss_diameter"]
+        if "hss_wall_thickness" in v1p1_dt:
+            dict_v2px["components"]["drivetrain"]["hss"]["wall_thickness"] = v1p1_dt["hss_wall_thickness"]
+        if "hss_material" in v1p1_dt:
+            dict_v2px["components"]["drivetrain"]["hss"]["material"] = v1p1_dt["hss_material"]
+
+        dict_v2px["components"]["drivetrain"]["nose"] = {}
+        if "nose_diameter" in v1p1_dt:
+            dict_v2px["components"]["drivetrain"]["nose"]["diameter"] = v1p1_dt["nose_diameter"]
+        if "nose_wall_thickness" in v1p1_dt:
+            dict_v2px["components"]["drivetrain"]["nose"]["wall_thickness"] = v1p1_dt["nose_wall_thickness"]
+        
+        dict_v2px["components"]["drivetrain"]["bedplate"] = {}
+        if "bedplate_wall_thickness" in v1p1_dt:
+            dict_v2px["components"]["drivetrain"]["bedplate"]["wall_thickness"] = v1p1_dt["bedplate_wall_thickness"]
+        if "bedplate_flange_width" in v1p1_dt:
+            dict_v2px["components"]["drivetrain"]["bedplate"]["flange_width"] = v1p1_dt["bedplate_flange_width"]
+        if "bedplate_flange_thickness" in v1p1_dt:
+            dict_v2px["components"]["drivetrain"]["bedplate"]["flange_thickness"] = v1p1_dt["bedplate_flange_thickness"]
+        if "bedplate_web_thickness" in v1p1_dt:
+            dict_v2px["components"]["drivetrain"]["bedplate"]["web_thickness"] = v1p1_dt["bedplate_web_thickness"]
+        if "bedplate_material" in v1p1_dt:
+            dict_v2px["components"]["drivetrain"]["bedplate"]["material"] = v1p1_dt["bedplate_material"]
+
+        dict_v2px["components"]["drivetrain"]["other_components"] = {}
+        if "brake_mass_user" in v1p1_dt:
+            dict_v2px["components"]["drivetrain"]["other_components"]["brake_mass"] = v1p1_dt["brake_mass_user"]
+        if "hvac_mass_coefficient" in v1p1_dt:
+            dict_v2px["components"]["drivetrain"]["other_components"]["hvac_mass_coefficient"] = v1p1_dt["hvac_mass_coefficient"]
+        if "converter_mass_user" in v1p1_dt:
+            dict_v2px["components"]["drivetrain"]["other_components"]["converter_mass"] = v1p1_dt["converter_mass_user"]
+        if "transformer_mass_user" in v1p1_dt:
+            dict_v2px["components"]["drivetrain"]["other_components"]["transformer_mass"] = v1p1_dt["transformer_mass_user"]
+        if "mb1Type" in v1p1_dt:
+            dict_v2px["components"]["drivetrain"]["other_components"]["mb1Type"] = v1p1_dt["mb1Type"]
+        if "mb2Type" in v1p1_dt:
+            dict_v2px["components"]["drivetrain"]["other_components"]["mb2Type"] = v1p1_dt["mb2Type"]
+        if "uptower" in v1p1_dt:
+            dict_v2px["components"]["drivetrain"]["other_components"]["uptower"] = v1p1_dt["uptower"]
+
+        dict_v2px["components"]["drivetrain"]["generator"] = {}
+        if "generator" in v1p1_nac:
+            #dict_v2px["components"]["drivetrain"]["generator"] = deepcopy(v1p1_nac["generator"])
+            if "generator_length" in v1p1_nac["generator"]:
+                dict_v2px["components"]["drivetrain"]["generator"]["length"] = v1p1_nac["generator"]["generator_length"]
+                if "generator_length" in dict_v2px["components"]["drivetrain"]["generator"]:
+                    dict_v2px["components"]["drivetrain"]["generator"].pop("generator_length")
             else:
-                if "generator_length" in v1p0_dt:
-                    dict_v2p0["components"]["drivetrain"]["generator"]["length"] = v1p0_dt["generator_length"]
-        if "generator_radius_user" in v1p0_dt:
-            dict_v2p0["components"]["drivetrain"]["generator"]["radius"] = v1p0_dt["generator_radius_user"]
-        if "generator_mass_user" in v1p0_dt:
-            dict_v2p0["components"]["drivetrain"]["generator"]["mass"] = v1p0_dt["generator_mass_user"]
-        if "rpm_efficiency_user" in v1p0_dt:
-            dict_v2p0["components"]["drivetrain"]["generator"]["rpm_efficiency"] = v1p0_dt["rpm_efficiency_user"]
+                if "generator_length" in v1p1_dt:
+                    dict_v2px["components"]["drivetrain"]["generator"]["length"] = v1p1_dt["generator_length"]
+        if "generator_radius_user" in v1p1_dt:
+            dict_v2px["components"]["drivetrain"]["generator"]["radius"] = v1p1_dt["generator_radius_user"]
+        if "generator_mass_user" in v1p1_dt:
+            dict_v2px["components"]["drivetrain"]["generator"]["mass"] = v1p1_dt["generator_mass_user"]
+        if "rpm_efficiency_user" in v1p1_dt:
+            dict_v2px["components"]["drivetrain"]["generator"]["rpm_efficiency"] = v1p1_dt["rpm_efficiency_user"]
 
         # Rigid-body mass properties. In v1 these live on
         # nacelle.drivetrain.elastic_properties_mb (system_mass / system_inertia
         # [/ system_inertia_tt] / system_center_mass + yaw_mass). v2 splits them
         # into a `rigid_body` (mass, inertia[6], location[3]) on the drivetrain
         # (tower-top coordinate system) and a separate `yaw` component.
-        if "elastic_properties_mb" in v1p0_dt:
-            epm = v1p0_dt["elastic_properties_mb"]
+        if "elastic_properties_mb" in v1p1_dt:
+            epm = v1p1_dt["elastic_properties_mb"]
             dt_ep = {}
             if "system_mass" in epm:
                 dt_ep["mass"] = epm["system_mass"]
@@ -641,19 +641,19 @@ class v1p0_to_v2p1:
             if "system_center_mass" in epm:
                 dt_ep["location"] = epm["system_center_mass"]
             if dt_ep:
-                dict_v2p0["components"]["drivetrain"]["elastic_properties"] = dt_ep
+                dict_v2px["components"]["drivetrain"]["elastic_properties"] = dt_ep
             if "yaw_mass" in epm:
-                dict_v2p0["components"]["yaw"] = {
+                dict_v2px["components"]["yaw"] = {
                     "elastic_properties": {"mass": epm["yaw_mass"]}
                 }
 
-        dict_v2p0["components"].pop("nacelle")
+        dict_v2px["components"].pop("nacelle")
 
 
-        return dict_v2p0
+        return dict_v2px
 
-    def convert_tower(self, dict_v2p0):
-        tower = dict_v2p0["components"]["tower"]
+    def convert_tower(self, dict_v2px):
+        tower = dict_v2px["components"]["tower"]
         # Start by changing outer_shape_bem to outer_shape
         tower["outer_shape"] = tower["outer_shape_bem"]
         tower.pop("outer_shape_bem")
@@ -669,10 +669,10 @@ class v1p0_to_v2p1:
         cd_tower = tower["outer_shape"]["drag_coefficient"]
         tower["outer_shape"]["cd"] = cd_tower
         tower["outer_shape"].pop("drag_coefficient")
-        return dict_v2p0
+        return dict_v2px
 
-    def convert_monopile(self, dict_v2p0):
-        monopile = dict_v2p0["components"]["monopile"]
+    def convert_monopile(self, dict_v2px):
+        monopile = dict_v2px["components"]["monopile"]
         # Start by changing outer_shape_bem to outer_shape
         monopile["outer_shape"] = monopile["outer_shape_bem"]
         monopile.pop("outer_shape_bem")
@@ -688,16 +688,16 @@ class v1p0_to_v2p1:
         cd_monopile = monopile["outer_shape"]["drag_coefficient"]
         monopile["outer_shape"]["cd"] = cd_monopile
         monopile["outer_shape"].pop("drag_coefficient")
-        return dict_v2p0
+        return dict_v2px
 
-    def convert_floating_platform(self, dict_v2p0):
+    def convert_floating_platform(self, dict_v2px):
         # Rad to deg in some inputs to floating platform
-        joints = dict_v2p0["components"]["floating_platform"]["joints"]
+        joints = dict_v2px["components"]["floating_platform"]["joints"]
         for i_joint in range(len(joints)):
             if "cylindrical" in joints[i_joint] and joints[i_joint]["cylindrical"]:
                 joints[i_joint]["location"][1] = np.rad2deg( joints[i_joint]["location"][1] )
         
-        members = dict_v2p0["components"]["floating_platform"]["members"]
+        members = dict_v2px["components"]["floating_platform"]["members"]
         for i_memb in range(len(members)):
             # some renaming
             #members[i_memb]["ca"] = members[i_memb]["Ca"]
@@ -725,12 +725,12 @@ class v1p0_to_v2p1:
                 spacing_rad = members[i_memb]["structure"]["longitudinal_stiffeners"]["spacing"]
                 if spacing_rad < 0.5*np.pi:
                     members[i_memb]["structure"]["longitudinal_stiffeners"]["spacing"] = np.rad2deg(spacing_rad)
-        return dict_v2p0
+        return dict_v2px
 
-    def convert_airfoils(self, dict_v2p0):
+    def convert_airfoils(self, dict_v2px):
         # Airfoils: angle of attack in deg and cl, cd, cm tags
-        for i_af in range(len(dict_v2p0["airfoils"])):
-            af = dict_v2p0["airfoils"][i_af]
+        for i_af in range(len(dict_v2px["airfoils"])):
+            af = dict_v2px["airfoils"][i_af]
             af["rthick"] = af["relative_thickness"]
             af.pop("relative_thickness")
             for i_plr in range(len(af["polars"])):
@@ -774,37 +774,37 @@ class v1p0_to_v2p1:
                     af["polars"][i_plr]["configuration"] = "default"
                 else:
                     af["polars"][i_plr]["configuration"] = "config%d"%i_plr
-        return dict_v2p0
+        return dict_v2px
     
-    def convert_materials(self, dict_v2p0):
+    def convert_materials(self, dict_v2px):
         # Materials
         # manufacturing_id instead of component_id
-        for i_mat in range(len(dict_v2p0["materials"])):
-            if "component_id" in dict_v2p0["materials"][i_mat]:
-                dict_v2p0["materials"][i_mat]["manufacturing_id"] = dict_v2p0["materials"][i_mat]["component_id"]
-                dict_v2p0["materials"][i_mat].pop("component_id")
-            if "alp0" in dict_v2p0["materials"][i_mat]:
-                alp0_rad = dict_v2p0["materials"][i_mat]["alp0"]
+        for i_mat in range(len(dict_v2px["materials"])):
+            if "component_id" in dict_v2px["materials"][i_mat]:
+                dict_v2px["materials"][i_mat]["manufacturing_id"] = dict_v2px["materials"][i_mat]["component_id"]
+                dict_v2px["materials"][i_mat].pop("component_id")
+            if "alp0" in dict_v2px["materials"][i_mat]:
+                alp0_rad = dict_v2px["materials"][i_mat]["alp0"]
                 if alp0_rad < np.pi:
-                    dict_v2p0["materials"][i_mat]["alp0"] = np.rad2deg(alp0_rad)
+                    dict_v2px["materials"][i_mat]["alp0"] = np.rad2deg(alp0_rad)
 
-        return dict_v2p0
+        return dict_v2px
     
-    def convert_controls(self, dict_v2p0):
+    def convert_controls(self, dict_v2px):
         # Map the v1 nested control (supervisory/pitch/torque/yaw) onto the flat
         # 2.x control block, converting rad -> deg and rad/s -> rpm. Only the
         # turbine-level fields available in v1 are emitted; controller-tuning
         # fields (ROSCO-style gains, filter/actuator settings, gain-schedule
         # tables) are not present in v1 and are therefore omitted.
-        v1_control = dict_v2p0["control"]
+        v1_control = dict_v2px["control"]
         pitch = v1_control.get("pitch", {})
         torque = v1_control.get("torque", {})
         supervisory = v1_control.get("supervisory", {})
         yaw = v1_control.get("yaw", {})
 
         flat = {}
-        if "rated_power" in dict_v2p0.get("assembly", {}):
-            flat["rated_power"] = dict_v2p0["assembly"]["rated_power"]
+        if "rated_power" in dict_v2px.get("assembly", {}):
+            flat["rated_power"] = dict_v2px["assembly"]["rated_power"]
         if "VS_minspd" in torque:  # rad/s -> rpm
             flat["min_rotor_speed"] = torque["VS_minspd"] * 30.0 / np.pi
         if "VS_maxspd" in torque:  # rated rotor speed, rad/s -> rpm
@@ -827,10 +827,10 @@ class v1p0_to_v2p1:
         if "yaw_rate" in yaw:
             flat["yaw_rate"] = yaw["yaw_rate"]
 
-        dict_v2p0["control"] = flat
-        return dict_v2p0
+        dict_v2px["control"] = flat
+        return dict_v2px
     
-class v2p0_to_v2px:
+class v2p0_to_v2p1:
 
     def __init__(self, filename_v2p0, filename_v2px):
         self.filename_v2p0 = filename_v2p0
