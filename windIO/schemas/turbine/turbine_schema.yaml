@@ -9,6 +9,7 @@ required:
     - components
     - assembly
 optional:
+    - version
     - comments
     - airfoils
     - materials
@@ -16,6 +17,9 @@ optional:
     - outputs
 additionalProperties: False
 properties:
+    version:
+        description: Version of the windIO file. This is intended to be used by the user to track changes in the windIO file.
+        type: string
     comments:
         description: Text field to describe the wind turbine, the changes to previous versions, etc,
         type: string
