@@ -3322,7 +3322,7 @@ definitions:
                             units: kg*m^2
                             # minimum: 0 # not 100% sure, but i_cp could be negative
             structural_damping:
-                description: Structural damping ratios of the clamped beam in the undeflected configuration.
+                description: Structural damping ratios of the clamped beam at standstill in the undeflected configuration.
                 type: object
                 required:
                     - mode_name
