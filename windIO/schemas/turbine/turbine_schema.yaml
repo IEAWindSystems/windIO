@@ -3322,18 +3322,28 @@ definitions:
                             units: kg*m^2
                             # minimum: 0 # not 100% sure, but i_cp could be negative
             structural_damping:
-                description: Structural damping of the beam. For now, viscous damping is included
+                description: Structural damping ratios of the undeflected beam at standstill, subject to appropriate boundary conditions.
                 type: object
+                required:
+                    - mode_name
+                    - damping_ratio
                 properties:
-                    mu:
+                    mode_name:
                         type: array
-                        default: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-                        description: Six damping coefficients to model viscous damping, where the damping forces are proportional to the strain rate
+                        default: ["mode_1"]
+                        description: Name of the modes associated to the damping ratios. For a blade, they may be: "flap_1",  "edge_1", ..., "torsion_1".
+                        items:
+                            type: string
+                            uniqueItems: true
+                    damping_ratio:
+                        type: array
+                        default: [0.0]
+                        description: Damping ratios, computed as - Re(lambda) / abs(lambda), where lambda is an eigenvalue. A reasonable number is 0.003, i.e. 0.3%.
                         items:
                             type: number
-                            minItems: 6
-                            maxItems: 6
                             uniqueItems: false
+                            minimum: 0
+                            units: dimensionless
             point_mass:
                 type: object
                 required:
