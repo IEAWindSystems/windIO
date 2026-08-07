@@ -472,7 +472,8 @@ class v1p0_to_v2p0:
 
         # Add required field structural damping
         blade_beam["structural_damping"] = {}
-        blade_beam["structural_damping"]["mu"] = np.zeros(6)
+        blade_beam["structural_damping"]["mode_name"] = ["mode_1"]
+        blade_beam["structural_damping"]["damping_ratio"] = np.array([0.0])
 
         blade_beam.pop("twist")
         # Pop older ref axis
