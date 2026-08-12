@@ -673,7 +673,7 @@ The fourth and last field of the :code:`blade` component is the :code:`elastic_p
 
 - :code:`inertia_matrix`: Defines the inertia properties of the blade, including mass and moment of inertia.
 - :code:`stiffness_matrix`: Defines the stiffness properties of the blade, including bending and torsional stiffness.
-- :code:`structural_damping`: Defines the structural damping properties of the blade, currently in Rayleigh format :code:`mu`.
+- :code:`structural_damping`: Defines the structural damping ratios of the blade.
 - :code:`point_mass`: Defines non-structural mass in the blade, such as lightning protection, root bolts etc, which is not defined or modelled as part of the composite structure.
 
 The :code:`elastic_properties` field of the IEA-15MW turbine is defined as follows:
