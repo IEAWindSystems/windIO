@@ -2,7 +2,7 @@ import unittest
 from pathlib import Path
 import windIO
 import windIO.schemas
-from windIO.converters.windIO2windIO import v1p0_to_v2p1, v2p0_to_v2p1
+from windIO.converters.windIO2windIO import v1p0_to_v2p1, v2p0_to_v2p1, v2p1_to_v2p2
 
 from jsonschema import Draft7Validator
 
@@ -80,6 +80,9 @@ class TestRegression(unittest.TestCase):
         converter = v2p0_to_v2p1(filename_v2p0, filename_v2p1)
         converter.convert()
 
+        converter = v2p1_to_v2p2(filename_v2p1, filename_v2p1)
+        converter.convert()
+
         # Now validate the output
         windIO.validate(filename_v2p1, schema_type="turbine/turbine_schema")
 
@@ -95,6 +98,9 @@ class TestRegression(unittest.TestCase):
         converter = v2p0_to_v2p1(filename_v2p0, filename_v2p1)
         converter.convert()
 
+        converter = v2p1_to_v2p2(filename_v2p1, filename_v2p1)
+        converter.convert()
+
     def test_v1p0_2p0_converter_IEA_22_280_RWT(self):
         
         filename_v1p0 = test_dir / "v1p0" / "IEA-22-280-RWT.yaml"
@@ -105,6 +111,9 @@ class TestRegression(unittest.TestCase):
         converter.convert()
 
         converter = v2p0_to_v2p1(filename_v2p0, filename_v2p1)
+        converter.convert()
+
+        converter = v2p1_to_v2p2(filename_v2p1, filename_v2p1)
         converter.convert()
 
         # Now validate the output
@@ -120,6 +129,9 @@ class TestRegression(unittest.TestCase):
         converter.convert()
 
         converter = v2p0_to_v2p1(filename_v2p0, filename_v2p1)
+        converter.convert()
+
+        converter = v2p1_to_v2p2(filename_v2p1, filename_v2p1)
         converter.convert()
 
         # Now validate the output
