@@ -3331,7 +3331,7 @@ definitions:
                     mode_name:
                         type: array
                         default: ["mode_1"]
-                        description: Name of the modes associated to the damping ratios. For a blade, they may be: "flap_1",  "edge_1", ..., "torsion_1".
+                        description: Name of the modes associated to the damping ratios. For a blade, they may be "flap_1",  "edge_1", ..., "torsion_1".
                         items:
                             type: string
                             uniqueItems: true
