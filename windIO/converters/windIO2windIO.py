@@ -875,6 +875,49 @@ class v2p0_to_v2p1:
             dict_v2px["control"].pop("shutdown")
         return dict_v2px
 
+
+class v2p1_to_v2p2:
+
+    def __init__(self, filename_v2p1, filename_v2px):
+        self.filename_v2p1 = filename_v2p1
+        self.filename_v2px = filename_v2px
+
+        os.makedirs(os.path.dirname(os.path.realpath(self.filename_v2px)), exist_ok=True)
+
+    def convert(self):
+        # Load v2.1 file
+        dict_v2p1 = windIO.load_yaml(self.filename_v2p1)
+
+        # Start with a copy of v2.1
+        dict_v2px = deepcopy(dict_v2p1)
+        dict_v2px["windIO_version"] = "2.2"
+
+        # v2.2 replaces the Rayleigh `mu` structural damping with modal `mode_name`/`damping_ratio` pairs
+        dict_v2px = self.convert_structural_damping(dict_v2px)
+
+        # Save v2.2 file
+        windIO.yaml.write_yaml(dict_v2px, self.filename_v2px)
+        print(f"Converted windIO v2.1 file {self.filename_v2p1} to windIO v2.2 file {self.filename_v2px}.")
+        return dict_v2px
+
+    def convert_structural_damping(self, node):
+        # Recurse through the whole tree since `structural_damping` can appear under any beam (blade, tower, monopile, drivetrain shafts, ...)
+        if isinstance(node, dict):
+            damping = node.get("structural_damping")
+            if isinstance(damping, dict) and "mu" in damping and "mode_name" not in damping:
+                print("⚠️ Found Rayleigh-based `mu` structural damping, no longer supported in windIO v2.2. "
+                      "Replacing with placeholder modal damping, please update manually!")
+                node["structural_damping"] = {
+                    "mode_name": ["mode_1"],
+                    "damping_ratio": np.array([0.0]),
+                }
+            for value in node.values():
+                self.convert_structural_damping(value)
+        elif isinstance(node, list):
+            for item in node:
+                self.convert_structural_damping(item)
+        return node
+
     
 def run():
     parser = argparse.ArgumentParser(description="WindIO v1->v2 Converter")
@@ -883,16 +926,16 @@ def run():
     args = parser.parse_args()
 
     filename_v1p0 = args.input
-    filename_v2p0 = args.output
+    filename_v2p2 = args.output
     
     if not os.path.exists(filename_v1p0):
         raise Exception(f"Cannot find input windIO v1.0 file: {filename_v1p0}.")
 
-    converter = v1p0_to_v2p0(filename_v1p0, filename_v2p0)
+    converter = v1p0_to_v2p1(filename_v1p0, filename_v2p2)
     converter.convert()
 
-    # Convert from v2.0 to v2.1
-    converter_2 = v2p0_to_v2px(filename_v2p0, filename_v2p0)
+    # Convert from v2.1 to v2.2
+    converter_2 = v2p1_to_v2p2(filename_v2p2, filename_v2p2)
     converter_2.convert()
         
     sys.exit(0)
